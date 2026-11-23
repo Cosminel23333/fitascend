@@ -45,6 +45,15 @@ Ce merge pe ecranul Azi:
 - `app/src/pages/`: `Today.tsx` (ecranul Azi, refolosibil pentru orice zi din calendar), `Sheet.tsx` (fereastra de jos), `Calculator.tsx`, `ProfileForm.tsx`, `Auth.tsx`
 - `app/tests/`: 24 de teste (formule, coadă, îmbinarea datelor unei zile)
 
+## V2.3 Splash cu logo (2026-11-23)
+- Logo ales: `Logo si poze input/Premium-app-logo...png`, optimizat la `app/src/assets/logo-splash.webp` (720 px, q92, clar pe Retina)
+- `app/src/pages/Splash.tsx`: GSAP (+ @gsap/react) și praf cosmic pe canvas (roșu/auriu + stele care sclipesc). Intro ~1,5 s la prima deschidere, flash ~0,35 s la fiecare schimbare de tab. Logo de 168/128 px în mijloc, colțuri rotunjite, fundal din paletă.
+- Același logo pe login și pe ecranul de încărcare
+- Previzualizarea linkului (og:image): `app/public/og-image.jpg` din „App icon logo” (1200×630, q92)
+- Greșeală reparată: originalele de 16 MB intraseră în repo (commit 496c3e2), scoase în 8cf00ec și puse în .gitignore. Rămân în istoricul git; le pot scoate și de acolo (force push) dacă vrei.
+- Iconița de pe ecranul iPhone-ului e încă cea provizorie (flacăra SVG). Propus: din „App icon logo”.
+- Deploy-ul pentru 8cf00ec a eșuat la pasul deploy-pages („No artifacts named github-pages… re-run later”, eroare temporară GitHub). Re-rulat cu un commit gol (124b494): ✔ publicat. Pe site: splash-ul cu logo (720 px încărcat, fără erori) și og-image.jpg (200).
+
 ## Parolă uitată (2026-11-23)
 Nu are încă „Am uitat parola” în aplicație. I-am dat varianta din Supabase SQL Editor: (1) `select email, created_at, last_sign_in_at from auth.users order by created_at;` (2) `update auth.users set encrypted_password = extensions.crypt('PAROLA', extensions.gen_salt('bf')), updated_at = now() where email = '...';`. Cheia Health ține de cont, nu de parolă, deci Scurtătura merge mai departe. Propus: „Am uitat parola” + „Schimbă parola” în app (cere Site URL în Supabase Auth).
 - Corecție: editorul Supabase afișează „Success. No rows returned” la orice UPDATE fără `returning`, deci mesajul nu înseamnă eșec (am greșit spunând că apare „1 row affected”). I-am dat varianta cu `returning email, updated_at`, ca să vadă rândul modificat.

@@ -5,7 +5,8 @@ import logo from '../assets/logo-splash.webp'
 
 gsap.registerPlugin(useGSAP)
 
-// intro: first open of the app (~1.5 s). flash: every screen change (~0.35 s).
+// intro: first open, full-screen red/gold warp tunnel (~1.7 s).
+// flash: every screen change, only the logo tilted in 3D with a light bar sweeping to the top-right (~0.45 s).
 export default function Splash({ mode, onDone }: { mode: 'intro' | 'flash'; onDone: () => void }) {
   const root = useRef<HTMLDivElement>(null)
   const canvas = useRef<HTMLCanvasElement>(null)
@@ -13,38 +14,44 @@ export default function Splash({ mode, onDone }: { mode: 'intro' | 'flash'; onDo
 
   useGSAP((_, contextSafe) => {
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
-    const stopDust = reduced ? () => {} : cosmicDust(canvas.current!, intro ? 1.3 : 0.3, intro ? 170 : 110)
-    const finish = contextSafe!(() => { stopDust(); onDone() })
+    const stopWarp = intro && !reduced ? warpTunnel(canvas.current!, 1.7) : () => {}
+    const finish = contextSafe!(() => { stopWarp(); onDone() })
     const tl = gsap.timeline({ onComplete: finish })
 
     if (intro) {
-      tl.from('.splash-glow', { scale: 0.3, opacity: 0, duration: 0.6, ease: 'power2.out' })
-        .from('.splash-logo', { scale: 0.6, opacity: 0, duration: 0.5, ease: 'back.out(1.7)' }, 0)
-        .to('.splash-logo', { scale: 1.07, duration: 0.28, ease: 'sine.inOut', yoyo: true, repeat: 1 }, '+=0.05')
-        .to('.splash-glow', { scale: 1.25, opacity: 0.6, duration: 0.28, ease: 'sine.inOut', yoyo: true, repeat: 1 }, '<')
-        .to(root.current, { opacity: 0, duration: 0.3, ease: 'power1.in' }, '+=0.05')
+      tl.from('.splash-nebula', { scale: 0.4, opacity: 0, duration: 0.7, ease: 'power2.out' })
+        .to('.splash-nebula', { rotation: 25, duration: 1.7, ease: 'none' }, 0)
+        .from('.splash-card', { scale: 0.6, opacity: 0, duration: 0.5, ease: 'back.out(1.7)' }, 0.1)
+        .to('.splash-card', { scale: 1.06, duration: 0.25, ease: 'sine.inOut', yoyo: true, repeat: 1 }, 0.65)
+        .fromTo('.splash-shine', { xPercent: -70, yPercent: 40 }, { xPercent: 70, yPercent: -40, duration: 0.45, ease: 'power2.inOut' }, 1.0)
+        .to(root.current, { opacity: 0, duration: 0.3, ease: 'power1.in' }, 1.45)
     } else {
-      tl.fromTo('.splash-logo', { scale: 0.85, opacity: 0 }, { scale: 1.06, opacity: 1, duration: 0.14, ease: 'power2.out' })
-        .fromTo('.splash-glow', { scale: 0.6, opacity: 0 }, { scale: 1.1, opacity: 1, duration: 0.14 }, 0)
-        .to('.splash-logo', { scale: 1, duration: 0.08 })
-        .to(root.current, { opacity: 0, duration: 0.13, ease: 'power1.in' })
+      tl.fromTo('.splash-card', { rotationY: -22, rotationX: 12, scale: 0.88, opacity: 0 },
+        { rotationY: 0, rotationX: 0, scale: 1, opacity: 1, duration: 0.22, ease: 'power3.out' })
+        .fromTo('.splash-shine', { xPercent: -70, yPercent: 40 }, { xPercent: 70, yPercent: -40, duration: 0.3, ease: 'power2.inOut' }, 0.06)
+        .to(root.current, { opacity: 0, duration: 0.12, ease: 'power1.in' }, 0.34)
     }
-    return stopDust
+    return stopWarp
   }, { scope: root })
 
   return (
     <div ref={root} className={`splash ${intro ? 'splash-intro' : 'splash-flash'}`} aria-hidden="true">
-      <canvas ref={canvas} className="splash-dust" />
-      <div className="splash-glow" />
-      <img className="splash-logo" src={logo} alt="" decoding="sync" />
+      {intro && <div className="splash-nebula" />}
+      {intro && <canvas ref={canvas} className="splash-dust" />}
+      <div className="splash-stage">
+        <div className="splash-card">
+          <img className="splash-logo" src={logo} alt="" decoding="sync" />
+          <div className="splash-shine" />
+        </div>
+      </div>
     </div>
   )
 }
 
-const colors = ['#D6303A', '#FF4D2E', '#EE4A1F', '#FF7A45', '#C4813F', '#E9B45A', '#FFC76B', '#FFE3A3']
+const colors = ['#FFE3A3', '#FFC76B', '#E9B45A', '#C4813F', '#FF7A45', '#EE4A1F', '#D6303A', '#B5305F']
 
-// red/gold dust and twinkling stars thrown out from the logo, drawn on a canvas (cheap on phones)
-function cosmicDust(c: HTMLCanvasElement, seconds: number, perSecond: number) {
+// streaks of light flying from the centre towards the viewer, like the reference "hyperspace" clip
+function warpTunnel(c: HTMLCanvasElement, seconds: number) {
   const dpr = Math.min(devicePixelRatio || 1, 2)
   const w = c.clientWidth
   const h = c.clientHeight
@@ -52,69 +59,63 @@ function cosmicDust(c: HTMLCanvasElement, seconds: number, perSecond: number) {
   c.height = h * dpr
   const g = c.getContext('2d')!
   g.scale(dpr, dpr)
+  g.lineCap = 'round'
   const cx = w / 2
   const cy = h / 2
-  const edge = Math.min(w, h, 900) * 0.16
+  const f = Math.max(w, h) * 0.35
+  const count = Math.round(Math.min(560, (w * h) / 800))
 
-  type P = { x: number; y: number; vx: number; vy: number; life: number; max: number; size: number; color: string; star: boolean }
-  const ps: P[] = []
-  const spawn = () => {
+  type S = { x: number; y: number; z: number; color: string }
+  const reset = (s: S, z = 1) => {
+    // keep the very centre clear so the logo stays readable
     const a = Math.random() * Math.PI * 2
-    const r = edge * (0.7 + Math.random() * 0.5)
-    const speed = 40 + Math.random() * 150
-    ps.push({
-      x: cx + Math.cos(a) * r,
-      y: cy + Math.sin(a) * r,
-      vx: Math.cos(a) * speed,
-      vy: Math.sin(a) * speed - 20,
-      life: 0,
-      max: 0.6 + Math.random() * 1.0,
-      size: 0.9 + Math.random() * 2.3,
-      color: colors[(Math.random() * colors.length) | 0],
-      star: Math.random() < 0.2,
-    })
+    const r = 0.08 + Math.random() * 1.4
+    s.x = Math.cos(a) * r
+    s.y = Math.sin(a) * r
+    s.z = z
+    s.color = colors[(Math.random() * colors.length) | 0]
   }
-  for (let i = 0; i < perSecond * 0.6; i++) spawn() // opening burst
+  const stars: S[] = Array.from({ length: count }, () => {
+    const s = { x: 0, y: 0, z: 0, color: '' }
+    reset(s, 0.05 + Math.random() * 0.95)
+    return s
+  })
 
   let raf = 0
   let t = 0
   let last = performance.now()
-  let owed = 0
   const frame = (now: number) => {
-    const dt = Math.min((now - last) / 1000, 0.05)
+    // the first rAF timestamp can be earlier than performance.now(): a negative dt would make speed NaN
+    const dt = Math.max(0, Math.min((now - last) / 1000, 0.05))
     last = now
     t += dt
-    if (t < seconds) for (owed += perSecond * dt; owed >= 1; owed--) spawn()
+    // speed rises fast, cruises, then eases off as the splash fades
+    const k = t / seconds
+    const speed = 0.35 + 1.5 * Math.sin(Math.min(k, 1) * Math.PI) ** 0.6
     g.clearRect(0, 0, w, h)
     g.globalCompositeOperation = 'lighter'
-    for (let i = ps.length - 1; i >= 0; i--) {
-      const p = ps[i]
-      p.life += dt
-      if (p.life >= p.max) { ps.splice(i, 1); continue }
-      p.x += p.vx * dt
-      p.y += p.vy * dt
-      p.vx *= 0.97
-      p.vy = p.vy * 0.97 - 12 * dt // dust floats upwards
-      const k = p.life / p.max
-      const alpha = Math.min(k * 6, 1) * (1 - k)
-      g.globalAlpha = alpha
-      g.fillStyle = p.color
-      if (p.star) {
-        const s = p.size * 3.2 * (0.7 + 0.3 * Math.sin(p.life * 22)) // twinkle
-        g.beginPath()
-        g.moveTo(p.x, p.y - s); g.lineTo(p.x + s * 0.22, p.y - s * 0.22); g.lineTo(p.x + s, p.y)
-        g.lineTo(p.x + s * 0.22, p.y + s * 0.22); g.lineTo(p.x, p.y + s); g.lineTo(p.x - s * 0.22, p.y + s * 0.22)
-        g.lineTo(p.x - s, p.y); g.lineTo(p.x - s * 0.22, p.y - s * 0.22)
-        g.closePath()
-        g.fill()
-      } else {
-        g.globalAlpha = alpha * 0.3
-        g.beginPath(); g.arc(p.x, p.y, p.size * 3.5, 0, Math.PI * 2); g.fill() // soft halo
-        g.globalAlpha = alpha
-        g.beginPath(); g.arc(p.x, p.y, p.size, 0, Math.PI * 2); g.fill()
-      }
+    for (const s of stars) {
+      s.z -= speed * dt * 0.8
+      if (s.z <= 0.03) { reset(s); continue }
+      // the tail sits a fixed depth behind the head: long streaks at any frame rate, longer when faster
+      const tz = Math.min(s.z + 0.05 + 0.14 * speed, 1)
+      const x1 = cx + (s.x / tz) * f
+      const y1 = cy + (s.y / tz) * f
+      const x2 = cx + (s.x / s.z) * f
+      const y2 = cy + (s.y / s.z) * f
+      if (x2 < -50 || x2 > w + 50 || y2 < -50 || y2 > h + 50) { reset(s); continue }
+      const near = 1 - s.z
+      const width = 0.4 + near * 2.6
+      const alpha = Math.min(near * 1.4, 1) * Math.min(t * 4, 1)
+      g.strokeStyle = s.color
+      g.globalAlpha = alpha * 0.28 // coloured glow
+      g.lineWidth = width * 3.2
+      g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke()
+      g.globalAlpha = alpha // bright core
+      g.lineWidth = width
+      g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke()
     }
-    if (t < seconds || ps.length) raf = requestAnimationFrame(frame)
+    if (t < seconds + 0.4) raf = requestAnimationFrame(frame)
   }
   raf = requestAnimationFrame(frame)
   return () => cancelAnimationFrame(raf)
