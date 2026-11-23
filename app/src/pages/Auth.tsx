@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useI18n } from '../lib/i18n'
 import { supabase } from '../lib/sync'
+import logo from '../assets/logo-splash.webp'
 
 export default function Auth() {
   const { t } = useI18n()
@@ -26,7 +27,7 @@ export default function Auth() {
 
   return (
     <div className="auth">
-      <img src="./logo.svg" alt="FitAscend" className="auth-logo" />
+      <img src={logo} alt="FitAscend" className="auth-logo" />
       <h1>FitAscend</h1>
       <p className="muted">{t('auth.tagline')}</p>
       <form className="card form" onSubmit={submit}>

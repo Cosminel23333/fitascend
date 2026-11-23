@@ -10,6 +10,8 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // webp: the splash logo must show offline too (og-image.jpg stays out on purpose)
+      workbox: { globPatterns: ['**/*.{js,css,html,webp,png,svg,ico}'] },
       includeAssets: ['logo.svg', 'apple-touch-icon-180x180.png'],
       manifest: {
         name: 'FitAscend',

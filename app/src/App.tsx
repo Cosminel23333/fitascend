@@ -4,11 +4,13 @@ import { I18nProvider, useI18n } from './lib/i18n'
 import { pending, subscribe } from './lib/outbox'
 import { useProfile, type Profile } from './lib/profile'
 import { flushNow, startSync, supabase } from './lib/sync'
+import logo from './assets/logo-splash.webp'
 import Auth from './pages/Auth'
 import Calculator from './pages/Calculator'
 import Calendar from './pages/Calendar'
 import HealthCard from './pages/HealthCard'
 import ProfileForm from './pages/ProfileForm'
+import Splash from './pages/Splash'
 import Today from './pages/Today'
 import Workout from './pages/Workout'
 
@@ -57,9 +59,10 @@ function Shell({ uid, profile, update }: { uid: string; profile: Profile; update
   const { t, lang, setLang } = useI18n()
   const [tab, setTab] = useState(fromHash)
   const [editing, setEditing] = useState(false)
+  const [flash, setFlash] = useState(0) // bumps on every screen change to replay the logo flash
 
   useEffect(() => {
-    const onHash = () => setTab(fromHash())
+    const onHash = () => { setTab(fromHash()); setFlash(n => n + 1) }
     addEventListener('hashchange', onHash)
     return () => removeEventListener('hashchange', onHash)
   }, [])
@@ -112,6 +115,7 @@ function Shell({ uid, profile, update }: { uid: string; profile: Profile; update
           </button>
         ))}
       </nav>
+      {flash > 0 && <Splash key={flash} mode="flash" onDone={() => setFlash(0)} />}
     </>
   )
 }
@@ -119,7 +123,7 @@ function Shell({ uid, profile, update }: { uid: string; profile: Profile; update
 function Loading({ text }: { text: string }) {
   return (
     <div className="auth">
-      <img src="./logo.svg" alt="" className="auth-logo pulse" />
+      <img src={logo} alt="" className="auth-logo pulse" />
       <p className="muted">{text}</p>
     </div>
   )
@@ -145,6 +149,7 @@ function SignedIn({ uid }: { uid: string }) {
 function Root() {
   const { t } = useI18n()
   const [session, setSession] = useState<Session | null | undefined>(undefined)
+  const [intro, setIntro] = useState(true)
 
   useEffect(() => {
     // getSession reads the saved session, so this works offline too
@@ -158,6 +163,7 @@ function Root() {
     <>
       <div className="sky" aria-hidden="true" />
       {session === undefined ? <Loading text={t('common.loading')} /> : session ? <SignedIn key={session.user.id} uid={session.user.id} /> : <Auth />}
+      {intro && <Splash mode="intro" onDone={() => setIntro(false)} />}
     </>
   )
 }

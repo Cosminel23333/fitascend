@@ -61,7 +61,7 @@ Revizuit pe 2026-11-23: datele stau în cloud, iar pe telefon rămân doar intr�
 - [x] Se pot adăuga sau modifica date și pentru zilele trecute
 
 ### Etapa 5 — Publicare și instalare
-- [ ] Publicarea pe GitHub Pages, ca aplicația să meargă de oriunde: date mobile sau orice Wi-Fi
+- [x] Publicarea pe GitHub Pages: https://cosminel23333.github.io/fitascend/
 - [ ] **Tu:** Safari → Distribuie → Adaugă pe ecranul principal
 - [ ] Verificarea finală pe telefonul tău, pe toate criteriile din SPEC, secțiunea 10
 

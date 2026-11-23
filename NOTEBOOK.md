@@ -19,7 +19,7 @@ Ce merge pe ecranul Azi:
 2. **Apple Health:** ✔ scurtătura merge (pașii ajung în aplicație), ✔ automatizările făcute de tine. Rămâne de verificat somnul după prima noapte cu ceasul. **Fără antrenamente de pe Watch** (decizia ta).
 3. ✔ **Etapa 3: Antrenament** gata și testată (SQL rulat de tine)
 4. ✔ **Etapa 4: Calendar** gata și testată (lunile anterioare, puncte pe zile, pagina zilei cu tot, editare pentru zile trecute)
-5. **Următorul: Etapa 5, publicare pe GitHub Pages + instalare pe iPhone** (are nevoie de tine: repository GitHub)
+5. **Etapa 5: publicare**, în lucru. ✔ Git inițializat în `D:\Aplicatie fitness` (fără commit încă), workflow `.github/workflows/deploy.yml` (test + build + GitHub Pages), `.gitignore` care ține local docx-ul și chestionarul, scanare: nicio parolă. ✔ Repo creat de tine: github.com/Cosminel23333/fitascend, Pages → GitHub Actions. ✔ Primul commit (001c8b0), cu emailul noreply 360365713+Cosminel23333@users.noreply.github.com. ✔ Push făcut, ✔ GitHub Actions a construit și publicat. **APLICAȚIA E ONLINE: https://cosminel23333.github.io/fitascend/** (https, service worker activ, login testat). ⏳ Tu: instalare pe iPhone (Safari → Distribuie → Adaugă pe ecranul principal) + contul tău + profil + cheie Health nouă dacă e nevoie.
 
 ## Decizii luate
 - Aplicație web (PWA): fără Mac și fără 99$/an (2026-11-23)
@@ -44,6 +44,17 @@ Ce merge pe ecranul Azi:
 - `app/src/lib/`: `outbox.ts` (coada), `sync.ts` (Supabase), `profile.ts` (profil + ținte), `day.ts` (datele unei zile), `calories.ts` (formule)
 - `app/src/pages/`: `Today.tsx` (ecranul Azi, refolosibil pentru orice zi din calendar), `Sheet.tsx` (fereastra de jos), `Calculator.tsx`, `ProfileForm.tsx`, `Auth.tsx`
 - `app/tests/`: 24 de teste (formule, coadă, îmbinarea datelor unei zile)
+
+## Parolă uitată (2026-11-23)
+Nu are încă „Am uitat parola” în aplicație. I-am dat varianta din Supabase SQL Editor: (1) `select email, created_at, last_sign_in_at from auth.users order by created_at;` (2) `update auth.users set encrypted_password = extensions.crypt('PAROLA', extensions.gen_salt('bf')), updated_at = now() where email = '...';`. Cheia Health ține de cont, nu de parolă, deci Scurtătura merge mai departe. Propus: „Am uitat parola” + „Schimbă parola” în app (cere Site URL în Supabase Auth).
+- Corecție: editorul Supabase afișează „Success. No rows returned” la orice UPDATE fără `returning`, deci mesajul nu înseamnă eșec (am greșit spunând că apare „1 row affected”). I-am dat varianta cu `returning email, updated_at`, ca să vadă rândul modificat.
+- ✔ Parola resetată, a intrat în cont (2026-11-23).
+
+## Publicare
+- Cod: https://github.com/Cosminel23333/fitascend (public; docx și chestionarul rămân local prin `.gitignore`)
+- Aplicație: https://cosminel23333.github.io/fitascend/
+- Orice `git push` pe `main` rulează testele, construiește și publică automat (`.github/workflows/deploy.yml`)
+- Commit-urile folosesc emailul noreply 360365713+Cosminel23333@users.noreply.github.com (setat local în repo)
 
 ## Pentru mine (pornire)
 `cd "D:\Aplicatie fitness\app"` → `npm run dev` (pe telefon: http://192.168.100.41:5173), `npm test`, `npm run build`. Proiect Supabase: xjeblnwtwqahsqarbsez.
