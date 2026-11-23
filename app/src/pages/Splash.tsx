@@ -6,7 +6,7 @@ import logo from '../assets/logo-splash.webp'
 gsap.registerPlugin(useGSAP)
 
 // intro: first open, full-screen red/gold warp tunnel (~1.7 s).
-// flash: every screen change, only the logo tilted in 3D with a light bar sweeping to the top-right (~0.45 s).
+// flash: every screen change, only the logo tilted in 3D with a light bar sweeping to the top-right (~0.5 s).
 export default function Splash({ mode, onDone }: { mode: 'intro' | 'flash'; onDone: () => void }) {
   const root = useRef<HTMLDivElement>(null)
   const canvas = useRef<HTMLCanvasElement>(null)
@@ -23,13 +23,13 @@ export default function Splash({ mode, onDone }: { mode: 'intro' | 'flash'; onDo
         .to('.splash-nebula', { rotation: 25, duration: 1.7, ease: 'none' }, 0)
         .from('.splash-card', { scale: 0.6, opacity: 0, duration: 0.5, ease: 'back.out(1.7)' }, 0.1)
         .to('.splash-card', { scale: 1.06, duration: 0.25, ease: 'sine.inOut', yoyo: true, repeat: 1 }, 0.65)
-        .fromTo('.splash-shine', { xPercent: -70, yPercent: 40 }, { xPercent: 70, yPercent: -40, duration: 0.45, ease: 'power2.inOut' }, 1.0)
+        .fromTo('.splash-shine', { xPercent: -37, yPercent: 21 }, { xPercent: 37, yPercent: -21, duration: 0.45, ease: 'power2.inOut' }, 1.0)
         .to(root.current, { opacity: 0, duration: 0.3, ease: 'power1.in' }, 1.45)
     } else {
       tl.fromTo('.splash-card', { rotationY: -22, rotationX: 12, scale: 0.88, opacity: 0 },
         { rotationY: 0, rotationX: 0, scale: 1, opacity: 1, duration: 0.22, ease: 'power3.out' })
-        .fromTo('.splash-shine', { xPercent: -70, yPercent: 40 }, { xPercent: 70, yPercent: -40, duration: 0.3, ease: 'power2.inOut' }, 0.06)
-        .to(root.current, { opacity: 0, duration: 0.12, ease: 'power1.in' }, 0.34)
+        .fromTo('.splash-shine', { xPercent: -37, yPercent: 21 }, { xPercent: 37, yPercent: -21, duration: 0.34, ease: 'power2.inOut' }, 0.06)
+        .to(root.current, { opacity: 0, duration: 0.12, ease: 'power1.in' }, 0.4) // after the bar has left the logo
     }
     return stopWarp
   }, { scope: root })
@@ -40,8 +40,11 @@ export default function Splash({ mode, onDone }: { mode: 'intro' | 'flash'; onDo
       {intro && <canvas ref={canvas} className="splash-dust" />}
       <div className="splash-stage">
         <div className="splash-card">
-          <img className="splash-logo" src={logo} alt="" decoding="sync" />
-          <div className="splash-shine" />
+          {/* clip-path keeps the light inside the rounded logo even while the card is rotated in 3D */}
+          <div className="splash-clip">
+            <img className="splash-logo" src={logo} alt="" decoding="sync" />
+            <div className="splash-shine" />
+          </div>
         </div>
       </div>
     </div>

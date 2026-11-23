@@ -54,6 +54,13 @@ Ce merge pe ecranul Azi:
 - Iconița de pe ecranul iPhone-ului e încă cea provizorie (flacăra SVG). Propus: din „App icon logo”.
 - Deploy-ul pentru 8cf00ec a eșuat la pasul deploy-pages („No artifacts named github-pages… re-run later”, eroare temporară GitHub). Re-rulat cu un commit gol (124b494): ✔ publicat. Pe site: splash-ul cu logo (720 px încărcat, fără erori) și og-image.jpg (200).
 
+### Splash v2 (2026-11-23, după feedback „nu arată bine”)
+- Model primit: `Logo si poze input/6797-196071980.mp4` (tunel „hyperspace” albastru; cadre extrase cu Edge prin Playwright, ffmpeg nu s-a putut instala)
+- Intro: tunel de dâre lungi roșu/auriu pe tot ecranul (canvas, ~560 de dâre, coada la adâncime fixă, ca să fie lungi la orice fps), nebuloasă caldă în centru, ceață prună pe margini, logo 168 px care pulsează, la final bară de lumină. ~1,7 s.
+- Schimbare de pagină: fără particule; logo de 132 px înclinat 3D (rotateY -22°, rotateX 12°) care se îndreaptă, cu bară de lumină înclinată (gradient la 60°) ieșind prin colțul dreapta-sus. ~0,45 s.
+- Bug reparat: primul cadru rAF avea dt negativ → viteza NaN → nicio dâră desenată
+- Commit 7a7095b: ✔ publicat. Aștept părerea ta de pe telefon.
+
 ## Parolă uitată (2026-11-23)
 Nu are încă „Am uitat parola” în aplicație. I-am dat varianta din Supabase SQL Editor: (1) `select email, created_at, last_sign_in_at from auth.users order by created_at;` (2) `update auth.users set encrypted_password = extensions.crypt('PAROLA', extensions.gen_salt('bf')), updated_at = now() where email = '...';`. Cheia Health ține de cont, nu de parolă, deci Scurtătura merge mai departe. Propus: „Am uitat parola” + „Schimbă parola” în app (cere Site URL în Supabase Auth).
 - Corecție: editorul Supabase afișează „Success. No rows returned” la orice UPDATE fără `returning`, deci mesajul nu înseamnă eșec (am greșit spunând că apare „1 row affected”). I-am dat varianta cu `returning email, updated_at`, ca să vadă rândul modificat.
