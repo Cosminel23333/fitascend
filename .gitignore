@@ -1,0 +1,4 @@
+# personal files that stay on this computer (the repository is public)
+*.docx
+INTREBARI_aplicatie_fitness.txt
+.playwright-cli/

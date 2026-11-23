@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- provisional logo: final cosmic-flame logo comes in V2.3 -->
+  <defs>
+    <radialGradient id="sky" cx="50%" cy="78%" r="75%">
+      <stop offset="0" stop-color="#EE4A1F"/>
+      <stop offset="0.35" stop-color="#B5305F"/>
+      <stop offset="0.7" stop-color="#5E0F45"/>
+      <stop offset="1" stop-color="#0c0309"/>
+    </radialGradient>
+    <linearGradient id="flame" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#EE4A1F"/>
+      <stop offset="0.55" stop-color="#C4813F"/>
+      <stop offset="1" stop-color="#fff3e0"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#sky)"/>
+  <circle cx="256" cy="300" r="150" fill="none" stroke="#fff3e0" stroke-opacity="0.35" stroke-width="6"/>
+  <path d="M256 92c38 62 104 104 104 186 0 64-46 112-104 112s-104-48-104-112c0-46 24-74 44-98 6 30 20 48 38 56-10-58 0-104 22-144z" fill="url(#flame)"/>
+  <path d="M256 236c18 30 46 50 46 88 0 30-20 52-46 52s-46-22-46-52c0-34 26-54 46-88z" fill="#0c0309" fill-opacity="0.45"/>
+  <circle cx="132" cy="120" r="4" fill="#fff3e0"/>
+  <circle cx="384" cy="96" r="3" fill="#fff3e0"/>
+  <circle cx="410" cy="190" r="2.5" fill="#fff3e0"/>
+  <circle cx="96" cy="230" r="2.5" fill="#fff3e0"/>
+</svg>

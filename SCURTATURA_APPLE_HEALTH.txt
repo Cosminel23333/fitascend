@@ -1,0 +1,85 @@
+=====================================================================
+  FITASCEND — SCURTĂTURA APPLE HEALTH (verificată pe iOS 26.7.2, engleză)
+=====================================================================
+
+Trimite din aplicația Health în FitAscend pașii de azi și somnul din
+ultimele 24 de ore. Pe ecranul Azi apar cu eticheta „din Health”.
+Ghidul e scris după ce a mers pe telefonul lui David (2026-11-23). Îl
+pot folosi și prietenii, fiecare cu cheia lui.
+
+Cum adaugi o acțiune: jos, în „Search Actions”, scrii numele și apeși
+pe ea. Cuvintele albastre de pe carduri sunt butoane. Un card se mută
+ținându-l apăsat și trăgându-l.
+
+---------------------------------------------------------------------
+  0. CHEIA TA
+---------------------------------------------------------------------
+FitAscend → Profil → Apple Health → „Generează cheia” → „Copiază cheia”.
+Nu o trimite nimănui.
+
+---------------------------------------------------------------------
+  1. PERMISIUNI
+---------------------------------------------------------------------
+Aplicația Health → poza de profil (sus-dreapta) → Privacy: Apps →
+Shortcuts → pornește Steps, Sleep, Workouts.
+(Butonul „Allow Access” din Shortcuts nu deschide mereu ecranul.)
+
+---------------------------------------------------------------------
+  2. SCURTĂTURA  (Shortcuts → + → redenumește în „FitAscend Sync”)
+---------------------------------------------------------------------
+Ordinea finală a cardurilor:
+
+  [1] Find Health Samples where
+        Type is Steps
+        Start Date is today
+        Group by: Day          (Fill Missing poate rămâne pornit)
+
+  [2] Calculate the Sum of Health Samples
+
+  [3] Find Health Samples where
+        Type is Sleep          (NU „Sleep Changes”)
+        Start Date is in the last 1 day
+        (fără filtru Value: serverul elimină singur „In Bed” și „Awake”)
+
+  [4] Repeat with each item in Health Samples   (cele de la [3])
+        [5] Text:  Start Date|End Date|Repeat Item
+              - Start Date și End Date: apeși pe buton → Date Format
+                ISO 8601, cu „ISO 8601 Time” pornit
+              - al treilea buton: Repeat Item cu Value bifat (implicit)
+              - între ele, caracterul | fără spații
+      End Repeat
+
+  [6] Combine Repeat Results with New Lines
+
+  [7] Get contents of
+        https://xjeblnwtwqahsqarbsez.supabase.co/rest/v1/rpc/ingest_health?apikey=sb_publishable_SUODFCpb9EbbfuG76Fsvxg_yGW_SnVo
+        Method: POST
+        Headers: niciunul (cheia apikey e în adresă)
+        Request Body: JSON
+          p_token  (Text)   = cheia ta
+          p_steps  (Number) = Sum          (de la [2])
+          p_sleep  (Text)   = Combined Text (de la [6])
+        (data nu se trimite: serverul pune data de azi)
+
+  [8] Show notification: Contents of URL    (opțional; util la verificare)
+
+Rulezi cu ▶. Răspuns corect, de exemplu:
+  {"day":"2026-11-23","steps":14888,"sleep_min":445}
+„sleep_min”: null înseamnă că în ultimele 24 h nu există somn în Health
+(de ex. nu ai dormit cu ceasul).
+
+---------------------------------------------------------------------
+  3. RULARE AUTOMATĂ
+---------------------------------------------------------------------
+Shortcuts → tab-ul Automation (jos) → „+” / New Automation →
+Time of Day → ora (ex. 08:00) → Daily → Run Immediately
+(oprește „Notify When Run”) → Next → alegi „FitAscend Sync” → Done.
+Repeți pentru alte ore (ex. 13:00, 18:00, 22:00).
+
+---------------------------------------------------------------------
+  PROBLEME ÎNTÂLNITE ȘI REZOLVATE
+---------------------------------------------------------------------
+- „No API key found”: antetul apikey nu ajungea → cheia s-a mutat în adresă.
+- Filtrul Value la somn cere text liber pe iOS 26 → scos; filtrarea se face pe server.
+- Cardul Find Health Samples nu se reîmprospătează după permisiuni →
+  ștergi cardul (✕) și îl adaugi din nou.
