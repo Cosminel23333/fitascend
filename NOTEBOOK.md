@@ -3,7 +3,11 @@
 ## Scop
 Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva prieteni. Adună într-un singur loc antrenamentele, mesele, apa, somnul, pașii și restul, cu un calendar central. Cost 0 lei.
 
-## Unde am rămas (2026-11-25, seara)
+## Unde am rămas (2026-11-25, noaptea)
+**V2.4 completă:** în pagina Progres și tehnică, deasupra listei: „Pe săptămâni” (bare pe 8 săptămâni, comutator Volum / Frecvență, atingi o bară → valoarea) și „Mușchi lucrați în ultimele 7 zile” (siluetă față/spate în stil hologramă cyan, mușchii lucrați în roșu, intensitate după serii: 8 serii = plin; serie principală = 1, secundară = 0,5) + lista mușchilor cu serii. Calcule: `weekOf`, `weekly`, `muscleSets` în progress.ts (cu teste, 45 total).
+**Ferestrele de completare** (masă, apă, căutare, fișa ⓘ…) apar acum SUS, nu jos (tu: „tot jos rămâne” chiar și după reparația cu tastatura). Dacă tot nu e bine pe iPhone: următorul pas e să scot deschiderea automată a tastaturii.
+
+## Înainte (2026-11-25, seara)
 **Pagina „Progres și tehnică” (cerută de tine):** buton sus în Antrenament → lista exercițiilor făcute (record, sesiuni, ▶ dacă are video) → atingi unul: videoclipul tău Higgsfield + Record/1RM/Sesiuni + grafic animat + toate sesiunile. Graficul NU mai e în fișa ⓘ; fișa ⓘ arată acum videoclipul tău (dacă există), altfel pozele vechi.
 - Videoclipuri: 110 (contul tău Higgsfield, modelul seedance_2_5, hologramă cyan cu mușchii în roșu). Lista în `app/src/data/videos.json` (nume, id exercițiu, link); 106 legate de exerciții din bibliotecă, 4 doar după nume (Burpee, Landmine Press, Reverse Lunge, Side Lunge: merg dacă ai exerciții proprii cu exact aceste nume). Linkurile sunt direct de pe CDN-ul Higgsfield (publice, permanente, ~1,5 MB/bucată). Dacă le ștergi din Higgsfield, dispar și din aplicație.
 - Potrivirea nume → exercițiu e făcută de mine; câteva sunt aproximări (ex. Pistol Squat → Kettlebell Pistol Squat, Single-Leg RDL → Kettlebell One-Legged Deadlift, Nordic → Natural Glute Ham Raise, Seated Machine Row → Leverage Iso Row). Scriptul: scratchpad, nu în repo.
@@ -29,7 +33,10 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 - ✔ V2.3 în lucru: splash cu logo-ul (tunel de lumină roșu/auriu la pornire; logo 3D cu bară de lumină la schimbarea paginii). Ultima corectură (bara traversează tot logo-ul, decupată pe colțurile rotunjite) e publicată (213e6a9). **Nu am primit încă părerea ta de pe telefon.**
 
 ## Pașii următori
-0. Tu: testezi pagina „Progres și tehnică” pe telefon (video + grafic); spui dacă vreun video e pus la exercițiul greșit
+0. Tu: testezi pe iPhone ferestrele de sus + graficele pe săptămâni + harta mușchilor
+   - Apoi: V2.6 streak-uri/insigne, V2.5 coduri de bare sau V2.7 notificări; mica îmbunătățire „apasă + Serie ca să salvezi” încă nefăcută
+   - ✔ Pagina Progres și tehnică ok (confirmat). Alarmă falsă „nu se salvează”: ai ales exercițiul fără „+ Serie” (valorile precompletate par salvate). Idee propusă: exercițiul ales să rămână după refresh + mesaj „apasă + Serie ca să salvezi”
+   - Următorul (propus): restul V2.4 (volum săptămânal + frecvență + harta mușchilor în pagina Progres) sau V2.6 streak-uri, V2.5 coduri de bare, V2.7 notificări
 1. Tu: testezi pe iPhone (9f515c5): (a) din ziua deschisă în Calendar, apeși iar „Calendar” jos → revii la lună; (b) „+ Adaugă masă” cu tastatura deschisă: se vede tot până la „Salvează”; (c) fișa ⓘ: derulezi până la grafic; (d) exercițiu nou adăugat urcă singur în mijlocul ecranului
    - Dacă (b) tot nu merge: următorul pas e să scot autoFocus (tastatura să nu mai apară singură)
    - ✔ Progresul în card merge (confirmat). Graficul: în fișa ⓘ, de la 2 zile diferite
@@ -84,3 +91,4 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 - 2026-11-25: tu: progresul nu apărea în antrenament → mutat și sub exercițiu în card + precompletare; verificat în browser simulat
 - 2026-11-25: tu: (1) înapoi la calendar doar din „‹ Calendar” → apăsarea din nou pe tab-ul curent revine la prima vedere (`home` în App.tsx); (2) foile de jos nu se vedeau / nu derulau pe iPhone → Sheet urmărește `visualViewport` (deasupra tastaturii), blochează pagina din spate (`html.sheet-open`), `overscroll-behavior: contain`; exercițiul nou se derulează în vedere. Tastatura nu se poate simula, deci (b) e neverificat pe iPhone
 - 2026-11-25: pagina Progres și tehnică (`pages/Progress.tsx`, `lib/videos.ts`, `byExercise` + test, `loadSets` cu paginare de 1000); 42 de teste; verificat în browser simulat (video rulează, grafic animat)
+- 2026-11-25: V2.4 rest (volum/frecvență/harta mușchilor) + ferestre sus. Capcană: clasa CSS `.bar` (macronutrienți, height 6px) se aplica și pe `<rect>` SVG → redenumit `wk-bar`
