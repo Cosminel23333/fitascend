@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.retry.outputs.page_url }}
     defaults:
       run:
         working-directory: app
@@ -39,4 +39,11 @@ jobs:
         with:
           path: app/dist
       - id: deployment
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+      # the uploaded artifact is sometimes not visible yet ("No artifacts named github-pages"): wait and try once more
+      - if: steps.deployment.outcome == 'failure'
+        run: sleep 30
+      - id: retry
+        if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v5
