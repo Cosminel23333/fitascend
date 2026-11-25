@@ -16,6 +16,7 @@ create table if not exists public.profiles (
   level        text check (level in ('beginner', 'intermediate', 'advanced')),
   lang         text default 'ro' check (lang in ('ro', 'en')),
   supplements  text[] not null default '{}',
+  saved_meals  jsonb not null default '[]',
   updated_at   timestamptz not null default now()
 );
 

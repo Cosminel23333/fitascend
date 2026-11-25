@@ -1,12 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { localDay, useDay, type Entry } from '../lib/day'
 import { useI18n } from '../lib/i18n'
-import { targets, type Profile } from '../lib/profile'
+import { setSaved, targets, type Profile, type SavedMeal } from '../lib/profile'
 import { supabase } from '../lib/sync'
 import Sheet from './Sheet'
 
 type Single = 'sleep' | 'steps' | 'screen' | 'weight'
-type Open = null | { type: 'meal'; entry?: Entry } | { type: 'water' } | { type: 'single'; kind: Single } | { type: 'supps' }
+type Open = null | { type: 'meal'; entry?: Entry } | { type: 'water' } | { type: 'single'; kind: Single } | { type: 'supps' } | { type: 'saved' }
 
 const num = (v: FormDataEntryValue | null) => Number(String(v ?? '').replace(',', '.').trim() || NaN)
 const inRange = (n: number, lo: number, hi: number) => Number.isFinite(n) && n >= lo && n <= hi
@@ -44,6 +44,9 @@ export default function Today({ uid, profile, update, day = localDay() }: { uid:
   const weightNote = weightEntry ? undefined : !isToday && lastWeight !== null ? t('today.lastKnown') : t('today.fromProfile')
   const supps = profile.supplements ?? []
   const suppTaken = (name: string) => rows.find(r => r.kind === 'supplement' && r.data?.name === name)
+  const saved = profile.saved_meals ?? []
+  const isSaved = (name: string) => saved.some(s => s.name.toLowerCase() === name.toLowerCase())
+  const addSaved = (s: SavedMeal) => put({ kind: 'meal', value: s.kcal, data: { name: s.name, description: s.description, protein: s.protein, carbs: s.carbs, fat: s.fat } })
 
   const r = 54
   const circ = 2 * Math.PI * r
@@ -109,6 +112,21 @@ export default function Today({ uid, profile, update, day = localDay() }: { uid:
             ))}
           </ul>
         )}
+        {saved.length > 0 && (
+          <>
+            <div className="card-head" style={{ marginTop: 16 }}>
+              <h2>{t('today.savedMeals')}</h2>
+              <button className="link" onClick={() => setOpen({ type: 'saved' })}>{t('today.edit')}</button>
+            </div>
+            <div className="checks">
+              {saved.map(s => (
+                <button key={s.name} className="check" onClick={() => addSaved(s)} aria-label={`${t('today.add')} ${s.name}, ${fmt(s.kcal)} kcal`}>
+                  <span className="box" aria-hidden="true">+</span>{s.name} <small className="muted">{fmt(s.kcal)}</small>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
         <button className="btn wide" style={{ marginTop: 16 }} onClick={() => setOpen({ type: 'meal' })}>+ {t('today.addMeal')}</button>
       </section>
 
@@ -168,8 +186,29 @@ export default function Today({ uid, profile, update, day = localDay() }: { uid:
         )}
       </section>
 
-      {open?.type === 'meal' && <MealSheet entry={open.entry} onClose={close} onDelete={id => { remove(id); close() }}
-        onSave={e => { put(e); close() }} />}
+      {open?.type === 'meal' && <MealSheet entry={open.entry} isSaved={isSaved} onClose={close} onDelete={id => { remove(id); close() }}
+        onSave={(e, keep) => {
+          put(e)
+          const meal = { ...(e.data as Omit<SavedMeal, 'kcal'>), kcal: e.value ?? 0 }
+          // touch the profile only when the saved list changes
+          if (keep || isSaved(meal.name)) update({ ...profile, saved_meals: setSaved(saved, meal, keep) })
+          close()
+        }} />}
+      {open?.type === 'saved' && (
+        <Sheet title={t('today.savedMeals')} onClose={close}>
+          {saved.length === 0 ? <p className="muted">{t('today.savedEmpty')}</p> : (
+            <ul className="list">
+              {saved.map(s => (
+                <li key={s.name} className="list-row">
+                  <span>{s.name} <small className="muted">{fmt(s.kcal)} kcal</small></span>
+                  <button className="icon-btn" aria-label={`${t('today.delete')} ${s.name}`}
+                    onClick={() => update({ ...profile, saved_meals: setSaved(saved, s, false) })}>✕</button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Sheet>
+      )}
       {open?.type === 'water' && (
         <NumberSheet title={t('today.water')} label="ml" min={1} max={5000} onClose={close}
           onSave={ml => { put({ kind: 'water', value: ml, data: null }); close() }} />
@@ -205,15 +244,17 @@ function StatButton({ label, value, unit, note, onClick }: { label: string; valu
   )
 }
 
-function MealSheet({ entry, onSave, onDelete, onClose }: {
+function MealSheet({ entry, isSaved, onSave, onDelete, onClose }: {
   entry?: Entry
-  onSave: (e: Pick<Entry, 'kind' | 'value' | 'data'> & Partial<Pick<Entry, 'id' | 'created_at'>>) => void
+  isSaved: (name: string) => boolean
+  onSave: (e: Pick<Entry, 'kind' | 'value' | 'data'> & Partial<Pick<Entry, 'id' | 'created_at'>>, keep: boolean) => void
   onDelete: (id: string) => void
   onClose: () => void
 }) {
   const { t } = useI18n()
   const [error, setError] = useState('')
   const d = entry?.data ?? {}
+  const [keep, setKeep] = useState(() => isSaved(String(d.name ?? '')))
 
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -228,7 +269,7 @@ function MealSheet({ entry, onSave, onDelete, onClose }: {
       kind: 'meal',
       value: kcal,
       data: { name: String(f.get('name')).trim(), description: String(f.get('description')).trim() || null, ...macros },
-    })
+    }, keep)
   }
 
   return (
@@ -242,6 +283,9 @@ function MealSheet({ entry, onSave, onDelete, onClose }: {
           <label className="field"><span>{t('today.carbs')} (g)</span><input name="carbs" inputMode="decimal" defaultValue={String(d.carbs ?? '')} /></label>
           <label className="field"><span>{t('today.fat')} (g)</span><input name="fat" inputMode="decimal" defaultValue={String(d.fat ?? '')} /></label>
         </div>
+        <button type="button" className="check" aria-pressed={keep} onClick={() => setKeep(k => !k)}>
+          <span className="box" aria-hidden="true">{keep ? '✓' : ''}</span>{t('today.keepMeal')}
+        </button>
         {error && <p className="error" role="alert">{error}</p>}
         <button className="btn wide">{t('onb.save')}</button>
         {entry && <button type="button" className="btn ghost wide danger" onClick={() => onDelete(entry.id)}>{t('today.delete')}</button>}

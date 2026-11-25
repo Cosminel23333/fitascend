@@ -16,6 +16,14 @@ export type Profile = {
   goal: Goal
   level: Level
   supplements?: string[]
+  saved_meals?: SavedMeal[]
+}
+export type SavedMeal = { name: string; description: string | null; kcal: number; protein: number | null; carbs: number | null; fat: number | null }
+
+// a saved meal is matched by name (any case): saving it again replaces the old values
+export function setSaved(list: SavedMeal[], meal: SavedMeal, keep: boolean) {
+  const rest = list.filter(s => s.name.toLowerCase() !== meal.name.toLowerCase())
+  return keep ? [...rest, meal] : rest
 }
 
 export function targets(p: Profile) {
