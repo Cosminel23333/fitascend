@@ -56,7 +56,7 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 
 ## Publicare
 - Cod: https://github.com/Cosminel23333/fitascend; aplicație: https://cosminel23333.github.io/fitascend/
-- Orice `git push` pe `main` → teste + construire + publicare automată (~2 min). Dacă pasul deploy-pages dă o eroare temporară, se re-rulează cu un commit gol.
+- Orice `git push` pe `main` → teste + construire + publicare automată (~2–3 min). deploy-pages pică des cu „No artifacts named github-pages” (GitHub nu vede încă pachetul): din 2026-11-25 workflow-ul așteaptă 30 s și reîncearcă singur. Dacă pică și a doua oară: commit gol.
 - Commit-uri cu emailul noreply 360365713+Cosminel23333@users.noreply.github.com
 
 ## Pentru mine (pornire)
@@ -69,3 +69,4 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 - 2026-11-23: publicat pe GitHub Pages; splash cu logo v1 → v2 (tunel de lumină după video-ul tău) → bara de lumină reparată (nu mai rămâne la jumătate, fără colțuri pătrate)
 - 2026-11-25: V2.1 mese salvate (Today.tsx, `setSaved` în profile.ts + test, coloana `saved_meals`); 37 de teste ok, build ok; SQL rulat de tine → publicat (deploy-pages a picat o dată temporar, re-rulat cu commit gol)
 - 2026-11-25: mesele salvate confirmate pe telefon. V2.4 partea 1: progres pe exercițiu (record, 1RM, sugestie, grafic); 41 de teste ok; previzualizare cu playwright-cli și Supabase simulat (sesiune falsă în localStorage + route)
+- 2026-11-25: publicarea pica la 4 din 8 rulări (deploy-pages) → adăugat reîncercare automată în deploy.yml; testat, a mers din a doua încercare; site-ul are progresul
