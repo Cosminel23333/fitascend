@@ -3,7 +3,13 @@
 ## Scop
 Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva prieteni. Adună într-un singur loc antrenamentele, mesele, apa, somnul, pașii și restul, cu un calendar central. Cost 0 lei.
 
-## Unde am rămas (2026-11-25)
+## Unde am rămas (2026-11-25, seara)
+**Pagina „Progres și tehnică” (cerută de tine):** buton sus în Antrenament → lista exercițiilor făcute (record, sesiuni, ▶ dacă are video) → atingi unul: videoclipul tău Higgsfield + Record/1RM/Sesiuni + grafic animat + toate sesiunile. Graficul NU mai e în fișa ⓘ; fișa ⓘ arată acum videoclipul tău (dacă există), altfel pozele vechi.
+- Videoclipuri: 110 (contul tău Higgsfield, modelul seedance_2_5, hologramă cyan cu mușchii în roșu). Lista în `app/src/data/videos.json` (nume, id exercițiu, link); 106 legate de exerciții din bibliotecă, 4 doar după nume (Burpee, Landmine Press, Reverse Lunge, Side Lunge: merg dacă ai exerciții proprii cu exact aceste nume). Linkurile sunt direct de pe CDN-ul Higgsfield (publice, permanente, ~1,5 MB/bucată). Dacă le ștergi din Higgsfield, dispar și din aplicație.
+- Potrivirea nume → exercițiu e făcută de mine; câteva sunt aproximări (ex. Pistol Squat → Kettlebell Pistol Squat, Single-Leg RDL → Kettlebell One-Legged Deadlift, Nordic → Natural Glute Ham Raise, Seated Machine Row → Leverage Iso Row). Scriptul: scratchpad, nu în repo.
+- Apăsarea din nou pe „Antrenament” jos te scoate din pagina de progres.
+
+## Înainte (2026-11-25, după-amiaza)
 **V2.4 partea 1, Progres pe exercițiu: publicat (6ffefe5).** În fișa exercițiului (ⓘ / i) apare „Progresul tău”: recordul (cea mai grea serie), 1RM estimat (Epley), „Data trecută” + „Azi încearcă” (progresie dublă: +1 rep până la 12, apoi +2,5 kg și 8 rep.), un grafic al 1RM-ului pe sesiuni (atingi un punct și vezi valoarea) și lista „Toate sesiunile”. Calculele sunt în `lib/progress.ts` (cu test), citirea în `loadHistory` (workouts.ts). Verificat în browser cu date simulate. Merge doar cu internet.
 - **Și în cardul de antrenament (a9ad718):** sub fiecare exercițiu: „Data trecută (data): serii”, „Azi încearcă: …” și „Record …”; câmpurile reps × kg vin precompletate cu sugestia. Tu ai cerut asta: nu găseai progresul (era doar în fișa ⓘ).
 - Exercițiu propriu cu același nume = refolosit (înainte făcea unul nou și istoricul se rupea).
@@ -23,6 +29,7 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 - ✔ V2.3 în lucru: splash cu logo-ul (tunel de lumină roșu/auriu la pornire; logo 3D cu bară de lumină la schimbarea paginii). Ultima corectură (bara traversează tot logo-ul, decupată pe colțurile rotunjite) e publicată (213e6a9). **Nu am primit încă părerea ta de pe telefon.**
 
 ## Pașii următori
+0. Tu: testezi pagina „Progres și tehnică” pe telefon (video + grafic); spui dacă vreun video e pus la exercițiul greșit
 1. Tu: testezi pe iPhone (9f515c5): (a) din ziua deschisă în Calendar, apeși iar „Calendar” jos → revii la lună; (b) „+ Adaugă masă” cu tastatura deschisă: se vede tot până la „Salvează”; (c) fișa ⓘ: derulezi până la grafic; (d) exercițiu nou adăugat urcă singur în mijlocul ecranului
    - Dacă (b) tot nu merge: următorul pas e să scot autoFocus (tastatura să nu mai apară singură)
    - ✔ Progresul în card merge (confirmat). Graficul: în fișa ⓘ, de la 2 zile diferite
@@ -76,3 +83,4 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 - 2026-11-25: publicarea pica la 4 din 8 rulări (deploy-pages) → adăugat reîncercare automată în deploy.yml; testat, a mers din a doua încercare; site-ul are progresul
 - 2026-11-25: tu: progresul nu apărea în antrenament → mutat și sub exercițiu în card + precompletare; verificat în browser simulat
 - 2026-11-25: tu: (1) înapoi la calendar doar din „‹ Calendar” → apăsarea din nou pe tab-ul curent revine la prima vedere (`home` în App.tsx); (2) foile de jos nu se vedeau / nu derulau pe iPhone → Sheet urmărește `visualViewport` (deasupra tastaturii), blochează pagina din spate (`html.sheet-open`), `overscroll-behavior: contain`; exercițiul nou se derulează în vedere. Tastatura nu se poate simula, deci (b) e neverificat pe iPhone
+- 2026-11-25: pagina Progres și tehnică (`pages/Progress.tsx`, `lib/videos.ts`, `byExercise` + test, `loadSets` cu paginare de 1000); 42 de teste; verificat în browser simulat (video rulează, grafic animat)
