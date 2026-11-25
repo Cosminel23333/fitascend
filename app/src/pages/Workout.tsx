@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { paceMinPerKm } from '../lib/calories'
 import { localDay } from '../lib/day'
 import { detailsUrl, equipmentName, imageUrl, loadExercises, muscleName, search, type Exercise } from '../lib/exercises'
@@ -150,6 +150,9 @@ function ExerciseBlock({ ex, day, sets, onDetail, onAddSet, onRemoveSet }: {
   const prev = ok?.sessions.filter(s => s.day < day).pop()
   const hint = prev ? suggest(prev.top) : undefined
   const fill = last ?? hint
+  const block = useRef<HTMLDivElement>(null)
+  // a block that mounts without sets was just picked: bring it up from the bottom of the page
+  useEffect(() => { if (!sets.length) block.current?.scrollIntoView({ block: 'center', behavior: 'smooth' }) }, [])
 
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -162,7 +165,7 @@ function ExerciseBlock({ ex, day, sets, onDetail, onAddSet, onRemoveSet }: {
   }
 
   return (
-    <div className="exercise">
+    <div className="exercise" ref={block}>
       <button className="exercise-name" onClick={onDetail}>{ex.n} <span aria-hidden="true">ⓘ</span></button>
       {prev && hint && (
         <p className="progress-last">

@@ -12,10 +12,12 @@ type Mark = 'workout' | 'meal' | 'water' | 'other'
 const marks: Mark[] = ['workout', 'meal', 'water', 'other']
 type Row = { id: string; day: string; created_at: string; kind?: string }
 
-export default function Calendar({ uid, profile, update }: { uid: string; profile: Profile; update: (p: Profile) => void }) {
+export default function Calendar({ uid, profile, update, home }: { uid: string; profile: Profile; update: (p: Profile) => void; home: number }) {
   const now = new Date()
   const [ym, setYm] = useState({ y: now.getFullYear(), m: now.getMonth() })
   const [selected, setSelected] = useState<string | null>(null)
+
+  useEffect(() => { setSelected(null) }, [home]) // the Calendar tab tapped again
 
   useEffect(() => { scrollTo(0, 0) }, [selected])
 

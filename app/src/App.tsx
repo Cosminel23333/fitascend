@@ -60,6 +60,7 @@ function Shell({ uid, profile, update }: { uid: string; profile: Profile; update
   const [tab, setTab] = useState(fromHash)
   const [editing, setEditing] = useState(false)
   const [flash, setFlash] = useState(0) // bumps on every screen change to replay the logo flash
+  const [home, setHome] = useState(0) // bumps when the current tab is tapped again: back to its first view
 
   useEffect(() => {
     const onHash = () => { setTab(fromHash()); setFlash(n => n + 1) }
@@ -79,7 +80,7 @@ function Shell({ uid, profile, update }: { uid: string; profile: Profile; update
         {tab === 'today' && <Today uid={uid} profile={profile} update={update} />}
         {tab === 'calculator' && <Calculator profile={profile} onChange={update} />}
         {tab === 'workout' && <Workout uid={uid} />}
-        {tab === 'calendar' && <Calendar uid={uid} profile={profile} update={update} />}
+        {tab === 'calendar' && <Calendar uid={uid} profile={profile} update={update} home={home} />}
         {tab === 'profile' && (
           <>
             <header className="page-head"><h1>{profile.name || t('nav.profile')}</h1></header>
@@ -109,7 +110,10 @@ function Shell({ uid, profile, update }: { uid: string; profile: Profile; update
       </main>
       <nav className="nav">
         {tabs.map(k => (
-          <button key={k} aria-current={tab === k ? 'page' : undefined} onClick={() => { location.hash = k }}>
+          <button key={k} aria-current={tab === k ? 'page' : undefined} onClick={() => {
+            if (tab !== k) location.hash = k
+            else { setHome(n => n + 1); scrollTo({ top: 0, behavior: 'smooth' }) }
+          }}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{icons[k]}</svg>
             {t(`nav.${k}`)}
           </button>
