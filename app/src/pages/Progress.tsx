@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { localDay } from '../lib/day'
 import { loadExercises, muscleName, type Exercise } from '../lib/exercises'
 import { useI18n } from '../lib/i18n'
-import { byExercise, progress, type HistSet, type Session } from '../lib/progress'
+import { byExercise, muscleSets, progress, weekly, type HistRow, type HistSet, type Session } from '../lib/progress'
 import { videoFor } from '../lib/videos'
 import { loadSets } from '../lib/workouts'
 
@@ -26,11 +27,12 @@ type Item = ReturnType<typeof byExercise>[number]
 export default function ProgressPage({ onBack }: { onBack: () => void }) {
   const { t, lang } = useI18n()
   const f = useFmt()
-  const [items, setItems] = useState<Item[] | 'error' | null>(null)
+  const [rows, setRows] = useState<HistRow[] | 'error' | null>(null)
   const [library, setLibrary] = useState<Exercise[]>([])
   const [open, setOpen] = useState<Item | null>(null)
+  const items = useMemo(() => (Array.isArray(rows) ? byExercise(rows) : rows), [rows])
 
-  useEffect(() => { loadSets().then(rows => setItems(byExercise(rows)), () => setItems('error')) }, [])
+  useEffect(() => { loadSets().then(setRows, () => setRows('error')) }, [])
   useEffect(() => { void loadExercises().then(setLibrary) }, [])
   useEffect(() => { scrollTo(0, 0) }, [open])
 
@@ -46,6 +48,7 @@ export default function ProgressPage({ onBack }: { onBack: () => void }) {
       {items === null && <p className="muted">{t('common.loading')}</p>}
       {items === 'error' && <p className="muted">{t('workout.historyNeedNet')}</p>}
       {Array.isArray(items) && items.length === 0 && <section className="card"><p className="muted" style={{ margin: 0 }}>{t('pr.empty')}</p></section>}
+      {Array.isArray(rows) && rows.length > 0 && <Overview rows={rows} library={library} />}
       {Array.isArray(items) && items.length > 0 && (
         <ul className="pr-list">
           {items.map(it => {
@@ -71,6 +74,118 @@ export default function ProgressPage({ onBack }: { onBack: () => void }) {
       )}
     </>
   )
+}
+
+// whole-training view: weekly volume or frequency, and the muscles worked this week
+function Overview({ rows, library }: { rows: HistRow[]; library: Exercise[] }) {
+  const { t, lang } = useI18n()
+  const f = useFmt()
+  const [view, setView] = useState<'volume' | 'days'>('volume')
+  const today = localDay()
+  const weeks = useMemo(() => weekly(rows, today), [rows, today])
+  const load = useMemo(() => muscleSets(rows, id => library.find(e => e.id === id), today), [rows, library, today])
+  const top = Object.entries(load).sort((a, b) => b[1] - a[1])
+  return (
+    <>
+      <section className="card">
+        <div className="card-head">
+          <h2>{t('pr.weekly')}</h2>
+          <div className="seg seg-small">
+            <button aria-pressed={view === 'volume'} onClick={() => setView('volume')}>{t('pr.volume')}</button>
+            <button aria-pressed={view === 'days'} onClick={() => setView('days')}>{t('pr.frequency')}</button>
+          </div>
+        </div>
+        <Bars key={view} data={weeks.map(w => ({ key: w.week, v: view === 'volume' ? w.volume : w.days }))}
+          label={t(view === 'volume' ? 'pr.volumeLabel' : 'pr.daysLabel')}
+          fmt={view === 'volume' ? n => `${f.kg(Math.round(n))} kg` : n => `${n} ${t(n === 1 ? 'pr.day' : 'pr.days')}`}
+          date={f.date} />
+      </section>
+      <section className="card">
+        <h2>{t('pr.muscles')}</h2>
+        <MuscleMap load={load} name={m => muscleName(m, lang)} />
+        {top.length > 0
+          ? <ul className="pr-muscles">{top.map(([m, n]) => <li key={m}><span>{muscleName(m, lang)}</span><b>{f.kg(n)} {t('pr.setsShort')}</b></li>)}</ul>
+          : <p className="muted" style={{ margin: '12px 0 0' }}>{t('pr.noMuscles')}</p>}
+      </section>
+      <h2 className="section-title">{t('pr.exercises')}</h2>
+    </>
+  )
+}
+
+// one bar per week, oldest first; tap a bar to read it (this week is shown first)
+function Bars({ data, label, fmt, date }: { data: { key: string; v: number }[]; label: string; fmt: (n: number) => string; date: (d: string) => string }) {
+  const { t } = useI18n()
+  const [sel, setSel] = useState(data.length - 1)
+  const W = 300, H = 140, T = 26, B = 20
+  const max = Math.max(...data.map(d => d.v), 1)
+  const bw = W / data.length
+  const h = (v: number) => ((H - T - B) * v) / max
+  const s = data[sel]
+  return (
+    <figure className="chart">
+      <figcaption className="muted">{label}</figcaption>
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${label}: ${data.map(d => `${date(d.key)} ${fmt(d.v)}`).join(', ')}`}>
+        <line x1={0} x2={W} y1={H - B} y2={H - B} className="chart-grid" />
+        {data.map((d, i) => (
+          <g key={d.key} onClick={() => setSel(i)}>
+            <rect x={i * bw + 5} y={H - B - h(d.v)} width={bw - 10} height={h(d.v)} rx={4} className={i === sel ? 'wk-bar on' : 'wk-bar'}
+              style={{ animationDelay: `${i * 40}ms` }} />
+            <rect x={i * bw} y={0} width={bw} height={H} fill="transparent" />
+          </g>
+        ))}
+        <text x={Math.min(Math.max(sel * bw + bw / 2, 44), W - 44)} y={Math.max(H - B - h(s.v) - 8, 12)} textAnchor="middle" className="chart-tip">{fmt(s.v)}</text>
+        <text x={0} y={H - 4} className="chart-axis">{date(data[0].key)}</text>
+        <text x={W} y={H - 4} textAnchor="end" className="chart-axis">{t('pr.thisWeek')}</text>
+      </svg>
+    </figure>
+  )
+}
+
+// stylised front and back figure in the clips' hologram look; each region glows with this week's sets
+type Shape = { m?: string; e?: [number, number, number, number]; r?: [number, number, number, number]; p?: string }
+// left half only: drawn again mirrored; shapes on the centre line go in `mid`
+const FRONT: { side: Shape[]; mid: Shape[] } = {
+  mid: [{ e: [50, 16, 8.5, 9.5] }, { m: 'neck', r: [46, 24, 8, 7] }, { m: 'abdominals', r: [43, 54, 14, 30] }, { r: [41, 84, 18, 12] }],
+  side: [
+    { m: 'traps', p: 'M40 33 L46 28.5 L46 33.5 Z' }, { m: 'shoulders', e: [33, 38, 7, 6.5] }, { m: 'chest', e: [42.5, 46, 8, 6.5] },
+    { m: 'biceps', e: [27, 56, 4.5, 9] }, { m: 'forearms', e: [23.5, 77, 4, 11] }, { e: [22, 92, 3, 3.5] }, { m: 'abdominals', e: [39, 66, 3, 9] },
+    { m: 'abductors', e: [37, 97, 3.5, 7] }, { m: 'adductors', e: [46.5, 104, 3, 9] }, { m: 'quadriceps', e: [41, 119, 6.5, 19] },
+    { m: 'calves', e: [41.5, 162, 4.5, 15] }, { e: [41.5, 184, 5, 3] },
+  ],
+}
+const BACK: typeof FRONT = {
+  mid: [{ e: [50, 16, 8.5, 9.5] }, { m: 'neck', r: [46, 24, 8, 6] }, { m: 'traps', p: 'M50 28 L37 36 L44 46 L50 50 L56 46 L63 36 Z' },
+    { m: 'middle back', r: [44.5, 47, 11, 17] }, { m: 'lower back', r: [44, 66, 12, 15] }],
+  side: [
+    { m: 'shoulders', e: [33, 38, 7, 6.5] }, { m: 'lats', e: [38.5, 59, 5.5, 12] }, { m: 'triceps', e: [27, 56, 4.5, 9] },
+    { m: 'forearms', e: [23.5, 77, 4, 11] }, { e: [22, 92, 3, 3.5] }, { m: 'glutes', e: [43.5, 93, 7, 8] },
+    { m: 'hamstrings', e: [41.5, 120, 6.5, 18] }, { m: 'calves', e: [41.5, 157, 5.5, 13] }, { e: [41.5, 184, 5, 3] },
+  ],
+}
+
+function MuscleMap({ load, name }: { load: Record<string, number>; name: (m: string) => string }) {
+  const { t } = useI18n()
+  const draw = (sh: Shape, k: string) => {
+    const n = sh.m ? load[sh.m] ?? 0 : 0
+    // 8 sets a week lights a muscle fully
+    const style = n > 0 ? { fillOpacity: 0.3 + 0.7 * Math.min(n / 8, 1) } : undefined
+    const cls = !sh.m ? 'mm-skin' : n > 0 ? 'mm-on' : 'mm-off'
+    const title = sh.m ? <title>{`${name(sh.m)}: ${n}`}</title> : null
+    if (sh.e) return <ellipse key={k} cx={sh.e[0]} cy={sh.e[1]} rx={sh.e[2]} ry={sh.e[3]} className={cls} style={style}>{title}</ellipse>
+    if (sh.r) return <rect key={k} x={sh.r[0]} y={sh.r[1]} width={sh.r[2]} height={sh.r[3]} rx={4} className={cls} style={style}>{title}</rect>
+    return <path key={k} d={sh.p} className={cls} style={style}>{title}</path>
+  }
+  const figure = (f: typeof FRONT, label: string) => (
+    <figure>
+      <svg viewBox="0 0 100 192" aria-hidden="true">
+        {f.side.map((s, i) => draw(s, `l${i}`))}
+        <g transform="translate(100 0) scale(-1 1)">{f.side.map((s, i) => draw(s, `r${i}`))}</g>
+        {f.mid.map((s, i) => draw(s, `m${i}`))}
+      </svg>
+      <figcaption className="muted">{label}</figcaption>
+    </figure>
+  )
+  return <div className="mm">{figure(FRONT, t('pr.front'))}{figure(BACK, t('pr.back'))}</div>
 }
 
 function ExerciseProgress({ item, muscles, onBack }: { item: Item; muscles: string[]; onBack: () => void }) {

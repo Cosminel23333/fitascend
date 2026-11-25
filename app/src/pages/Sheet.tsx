@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 
-// bottom sheet used for every input form
+// sheet used for every input form (top-anchored, see .sheet-backdrop)
 export default function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
   const backdrop = useRef<HTMLDivElement>(null)
 

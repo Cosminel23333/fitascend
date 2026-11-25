@@ -470,39 +470,57 @@ button { font: inherit; color: inherit; }
 .pr-stats > div { padding: 12px 14px; border-radius: 16px; border: 1px solid var(--line); background: linear-gradient(160deg, var(--glass-strong), var(--glass)); }
 .pr-stats small { display: block; color: var(--muted); font-size: 12px; margin-bottom: 4px; }
 .pr-stats b { font-size: 17px; }
+.seg-small { padding: 3px; border-radius: 12px; }
+.seg-small button { padding: 6px 12px; font-size: 13px; border-radius: 9px; }
+.wk-bar { fill: rgba(238, 74, 31, 0.4); transform-box: fill-box; transform-origin: bottom; animation: grow 0.6s cubic-bezier(.2, .8, .2, 1) backwards; }
+.wk-bar.on { fill: var(--orange); filter: drop-shadow(0 0 6px rgba(238, 74, 31, 0.6)); }
+@keyframes grow { from { transform: scaleY(0); } }
+@media (prefers-reduced-motion: reduce) { .wk-bar { animation: none; } }
+/* muscle map: cyan hologram like the clips, worked muscles glow red-orange */
+.mm { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px 0 4px; border-radius: 16px; background: radial-gradient(70% 60% at 50% 45%, rgba(40, 160, 220, 0.12), transparent 70%); }
+.mm figure { margin: 0; text-align: center; }
+.mm svg { width: 100%; max-width: 150px; height: auto; display: block; margin: 0 auto 4px; overflow: visible; }
+.mm figcaption { font-size: 12px; }
+.mm-skin { fill: rgba(90, 210, 255, 0.06); stroke: rgba(90, 210, 255, 0.35); stroke-width: 0.6; }
+.mm-off { fill: rgba(90, 210, 255, 0.1); stroke: rgba(90, 210, 255, 0.55); stroke-width: 0.6; }
+.mm-on { fill: #ff4a2a; stroke: #ff8a5c; stroke-width: 0.6; filter: drop-shadow(0 0 2.5px rgba(255, 74, 42, 0.9)); }
+.pr-muscles { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; font-size: 14px; }
+.pr-muscles li { display: flex; justify-content: space-between; gap: 8px; }
+.pr-muscles span { text-transform: capitalize; }
 .pr-sessions { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; font-size: 14px; }
 .pr-sessions li { display: grid; grid-template-columns: 64px 1fr; gap: 10px; }
 .ex-steps { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: 14px; line-height: 1.45; color: rgba(251, 238, 240, 0.85); }
 
-/* bottom sheet */
+/* form sheet: anchored to the top, so the iOS keyboard never pushes it to the bottom of the screen */
 html.sheet-open, html.sheet-open body { overflow: hidden; }
 .sheet-backdrop {
   position: fixed;
   inset: 0;
   z-index: 30;
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.55);
+  padding: calc(env(safe-area-inset-top) + 12px) 10px 10px;
+  background: rgba(0, 0, 0, 0.6);
   animation: fade 0.2s ease;
 }
 .sheet {
   width: 100%;
   max-width: 560px;
-  max-height: calc(100% - env(safe-area-inset-top) - 12px);
+  max-height: 100%;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 18px 16px calc(env(safe-area-inset-bottom) + 18px);
-  border-radius: 24px 24px 0 0;
+  padding: 18px 16px;
+  border-radius: 24px;
   border: 1px solid var(--line);
-  border-bottom: 0;
   background: linear-gradient(180deg, #2a0a22, #14040f);
-  animation: rise 0.28s cubic-bezier(.2, .8, .2, 1);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  animation: drop 0.28s cubic-bezier(.2, .8, .2, 1);
 }
 .sheet > header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
 .sheet > header h2 { margin: 0; font-size: 20px; }
 @keyframes fade { from { opacity: 0; } }
-@keyframes rise { from { transform: translateY(100%); } }
+@keyframes drop { from { opacity: 0; transform: translateY(-16px) scale(0.98); } }
 
 .sync-pill {
   position: fixed;

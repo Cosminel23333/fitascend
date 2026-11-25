@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { byExercise, e1rm, progress, suggest } from '../src/lib/progress'
+import { byExercise, e1rm, muscleSets, progress, suggest, weekOf, weekly } from '../src/lib/progress'
 
 describe('e1rm', () => {
   it('uses Epley, a single rep is the max', () => {
@@ -35,6 +35,38 @@ describe('byExercise', () => {
     const list = byExercise([r('a', '2026-11-01'), r('b', '2026-11-20'), r('a', '2026-11-10', 10)])
     expect(list.map(x => [x.id, x.name, x.sessions.length])).toEqual([['b', 'B', 1], ['a', 'A', 2]])
     expect(list[1].record?.reps).toBe(10)
+  })
+})
+
+describe('weekOf / weekly', () => {
+  it('weeks start on Monday', () => {
+    expect(weekOf('2026-11-25')).toBe('2026-11-23') // Wednesday
+    expect(weekOf('2026-11-23')).toBe('2026-11-23')
+    expect(weekOf('2026-11-29')).toBe('2026-11-23') // Sunday
+    expect(weekOf('2026-03-02')).toBe('2026-03-02')
+  })
+  it('sums volume and counts training days per week, keeping empty weeks', () => {
+    const w = weekly([
+      { day: '2026-11-24', reps: 10, weight_kg: 50 },
+      { day: '2026-11-24', reps: 10, weight_kg: 50 },
+      { day: '2026-11-25', reps: 5, weight_kg: 100 },
+      { day: '2026-11-10', reps: 8, weight_kg: 60 },
+      { day: '2025-01-01', reps: 8, weight_kg: 60 },
+    ], '2026-11-25', 3)
+    expect(w).toEqual([
+      { week: '2026-11-09', volume: 480, days: 1 },
+      { week: '2026-11-16', volume: 0, days: 0 },
+      { week: '2026-11-23', volume: 1500, days: 2 },
+    ])
+  })
+})
+
+describe('muscleSets', () => {
+  it('counts main muscles fully and secondary ones by half, last 7 days only', () => {
+    const lib: Record<string, { m: string[]; s: string[] }> = { bench: { m: ['chest'], s: ['triceps'] } }
+    const r = (day: string, exercise_id = 'bench') => ({ exercise_id, exercise_name: '', day, reps: 8, weight_kg: 60 })
+    expect(muscleSets([r('2026-11-25'), r('2026-11-19'), r('2026-11-18'), r('2026-11-25', 'custom')], id => lib[id], '2026-11-25'))
+      .toEqual({ chest: 2, triceps: 1 })
   })
 })
 
