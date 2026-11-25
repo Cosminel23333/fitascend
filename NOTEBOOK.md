@@ -3,7 +3,11 @@
 ## Scop
 Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva prieteni. Adună într-un singur loc antrenamentele, mesele, apa, somnul, pașii și restul, cu un calendar central. Cost 0 lei.
 
-## Unde am rămas (2026-11-26, noaptea târziu)
+## Unde am rămas (2026-11-26, și mai târziu)
+**Poza la etichetă SCOASĂ** (tu: „nu prea merge și e greu să faci poza”; tesseract.js dezinstalat). În loc: cod negăsit → formular „Produs nou” (nume, kcal/100 g, P/C/G, porție opțională) → „Salvează produsul” → se salvează în tabelul comun `foods` (toți utilizatorii aplicației îl găsesc la următoarea scanare) → alegi gramele → formularul mesei se completează. Căutare: întâi `foods` (FitAscend), apoi Open Food Facts, apoi USDA. Testat cap-coadă cu un cod inexistent (9582716304401).
+- **AȘTEPT: rulezi `supabase/2026-11-26_foods.sql` în SQL Editor.** Până atunci produsele noi nu se salvează (masa se completează totuși).
+
+## Înainte (2026-11-26, noaptea târziu)
 **V2.5 Coduri de bare + poză la etichetă (gata, publicat):** în „Adaugă masă” sus: „Scanează codul” (camera live în aplicație/web; dacă nu merge camera → „Poză la cod”) și „Poză la etichetă”. Cod → Open Food Facts (mondial, multe produse RO), apoi USDA (DEMO_KEY, ~30 căutări/oră). Etichetă → OCR pe telefon (tesseract.js, ron+eng; prima dată descarcă câțiva MB) → kcal/grăsimi/glucide/proteine la 100 g (+ corectează virgula pierdută folosind caloriile). Apoi „Cât ai mâncat (g)” (implicit porția produsului sau 100) → „Completează” umple formularul; poți corecta. `lib/food.ts` (+ teste), `pages/FoodScan.tsx`. Am scos și tastatura automată din fereastra mesei.
 - Verificat în browser: cod Coca-Cola din poză → găsit, 330 g → 145 kcal; etichetă generată → 250 kcal, 12,5 G, 30 C, 5,2 P. Camera live NU se poate testa la mine (fără cameră) → de verificat pe iPhone.
 
@@ -44,8 +48,8 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 - ✔ V2.3 în lucru: splash cu logo-ul (tunel de lumină roșu/auriu la pornire; logo 3D cu bară de lumină la schimbarea paginii). Ultima corectură (bara traversează tot logo-ul, decupată pe colțurile rotunjite) e publicată (213e6a9). **Nu am primit încă părerea ta de pe telefon.**
 
 ## Pașii următori
-0. Tu: testezi pe iPhone scanarea (camera live pe un produs, apoi o poză la o etichetă reală)
-   - Apoi: V2.6 streak-uri + insigne, V2.7 notificări, V2.8 export; mică: „apasă + Serie ca să salvezi”
+0. Tu: rulezi 2026-11-26_foods.sql; testezi scanarea live + un produs negăsit
+   - Apoi (propus): V2.6 streak-uri + insigne + rezumat săptămânal; alternative V2.7 notificări, V2.8 export, V2.9 widget/Siri; mică: „apasă + Serie ca să salvezi”
    - ✔ Figura 3D ok (confirmat).
    - Apoi: V2.6 streak-uri/insigne, V2.5 coduri de bare sau V2.7 notificări; mica îmbunătățire „apasă + Serie ca să salvezi” încă nefăcută
    - ✔ Pagina Progres și tehnică ok (confirmat). Alarmă falsă „nu se salvează”: ai ales exercițiul fără „+ Serie” (valorile precompletate par salvate). Idee propusă: exercițiul ales să rămână după refresh + mesaj „apasă + Serie ca să salvezi”
@@ -108,3 +112,4 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 - 2026-11-26: figura 3D hologramă (BodyParts3D + Three.js, shader propriu: fresnel cyan + zone roșii pulsând); verificat în browser simulat (pornește din față, se rotește, roșu pe piept/brațe)
 - 2026-11-26: tu: scoate penisul din model → tăiat din piele + gol acoperit; verificat din față și profil
 - 2026-11-26: V2.5 coduri de bare (barcode-detector 3.2.3 cu zxing-wasm pe iPhone) + OCR etichetă (tesseract.js 7.0.0); test cap-coadă în playwright cu imagini generate (scratchpad/v/test_images.py)
+- 2026-11-26: scos OCR-ul; produse proprii comune în tabelul `foods` (RLS: citesc toți autentificații, modifică doar autorul); atenție: codurile 2xxxx sunt interne de magazin și pot exista în OFF cu produse aleatorii
