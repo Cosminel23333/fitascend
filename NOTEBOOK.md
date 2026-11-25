@@ -3,7 +3,11 @@
 ## Scop
 Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva prieteni. Adună într-un singur loc antrenamentele, mesele, apa, somnul, pașii și restul, cu un calendar central. Cost 0 lei.
 
-## Unde am rămas (2026-11-23, seara)
+## Unde am rămas (2026-11-25)
+**V2.1 Mese salvate: cod gata, commit local 2c89711, NU e publicat.** Aștept să rulezi `supabase/2026-11-25_saved_meals.sql` în Supabase. Dacă publicăm înainte, salvările profilului sunt respinse. Cum funcționează: bifa „Salvează în Mesele mele” în fereastra mesei; masa apare ca buton „+” deasupra lui „Adaugă masă” și se adaugă cu o atingere; „Modifică” le șterge. Sunt ținute în profil (`saved_meals`), deci merg și fără semnal.
+- C: are acum 76 GB liberi (rezolvat). Parolele sunt amânate (decizia ta).
+
+## Înainte (2026-11-23)
 **V1 e completă și online: https://cosminel23333.github.io/fitascend/**
 - ✔ Cont/login, profil (editabil, inclusiv obiectivul), calculator calorii
 - ✔ Ecranul Azi: mese, apă, somn, pași, timp pe telefon, greutate (opțională), suplimente
@@ -13,17 +17,15 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 - ✔ Datele stau doar în cloud; pe telefon doar coada de netrimise (+ profilul)
 - ✔ V2.3 în lucru: splash cu logo-ul (tunel de lumină roșu/auriu la pornire; logo 3D cu bară de lumină la schimbarea paginii). Ultima corectură (bara traversează tot logo-ul, decupată pe colțurile rotunjite) e publicată (213e6a9). **Nu am primit încă părerea ta de pe telefon.**
 
-## Pașii următori (mâine)
-1. Tu: îmi spui cum arată splash-ul și bara de lumină pe telefon, apoi ajustăm
-2. Întrebări fără răspuns de la tine:
+## Pașii următori
+1. Tu: rulezi `2026-11-25_saved_meals.sql` în SQL Editor → eu fac push (publicare) → testezi pe telefon
+2. Apoi V2.4: recorduri, 1RM, grafice
+3. Tot deschis: părerea ta despre splash; întrebările:
    - fac iconița de pe ecranul iPhone-ului din „App icon logo”?
    - golesc cache-ul npm (~1 GB pe C:)? E sigur, se redescarcă la nevoie.
    - scot complet logo-urile originale din istoricul GitHub (force push, ireversibil)? Implicit le las.
-3. Apoi alegem din lista V2: „Am uitat parola”/„Schimbă parola”, mese salvate, recorduri/1RM/grafice, coduri de bare, streak-uri, notificări
-4. De verificat: somnul din Health după prima noapte cu ceasul
-
-## ⚠ De rezolvat pe calculator
-- **Discul C: e plin** (0 GB liberi din 223). Din cauza asta pică npm/ffmpeg. Am rulat testele și construirea cu TMP pe D:. Recomandat: Disk Cleanup, golit Coșul de reciclare, mutat fișiere mari pe D:.
+4. Restul V2: coduri de bare, streak-uri, notificări (parolele: amânate)
+5. De verificat: somnul din Health după prima noapte cu ceasul
 
 ## Decizii luate
 - PWA, nu nativă: fără Mac și fără 99$/an
@@ -62,3 +64,4 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 - 2026-11-23: Apple Health: Scurtătură construită pas cu pas pe iOS 26 (cheia apikey mutată în URL; filtrul de somn făcut pe server); pașii merg, automatizări setate
 - 2026-11-23: bug pe telefon („+ Forță” mort pe http) reparat cu `uuid.ts`; parola uitată resetată prin SQL
 - 2026-11-23: publicat pe GitHub Pages; splash cu logo v1 → v2 (tunel de lumină după video-ul tău) → bara de lumină reparată (nu mai rămâne la jumătate, fără colțuri pătrate)
+- 2026-11-25: V2.1 mese salvate (Today.tsx, `setSaved` în profile.ts + test, coloana `saved_meals`); 37 de teste ok, build ok; nepublicat până la rularea SQL
