@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { mergeOps } from './day'
 import type { Exercise } from './exercises'
 import { pending } from './outbox'
+import type { HistSet } from './progress'
 import { save, supabase } from './sync'
 import { uuid } from './uuid'
 
@@ -89,6 +90,15 @@ export function useWorkouts(uid: string, day: string) {
   }
 
   return { workouts, sets, status, saveWorkout, removeWorkout, addSet, removeSet }
+}
+
+// every set of one exercise, with its day; throws when offline
+// shortcut: sets still waiting in the outbox are left out, merge them if offline history matters
+export async function loadHistory(exerciseId: string): Promise<HistSet[]> {
+  const { data, error } = await supabase.from('workout_sets').select('reps, weight_kg, workouts(day)').eq('exercise_id', exerciseId)
+  if (error) throw error
+  return (data as unknown as { reps: number; weight_kg: number; workouts: { day: string } }[])
+    .map(s => ({ day: s.workouts.day, reps: s.reps, weight_kg: s.weight_kg }))
 }
 
 // the user's own exercises, shaped like library ones so search treats them the same

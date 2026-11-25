@@ -3,7 +3,8 @@ import { paceMinPerKm } from '../lib/calories'
 import { localDay } from '../lib/day'
 import { detailsUrl, equipmentName, imageUrl, loadExercises, muscleName, search, type Exercise } from '../lib/exercises'
 import { useI18n } from '../lib/i18n'
-import { useCustomExercises, useWorkouts, type Workout as W, type WSet } from '../lib/workouts'
+import { progress, suggest, type HistSet, type Session } from '../lib/progress'
+import { loadHistory, useCustomExercises, useWorkouts, type Workout as W, type WSet } from '../lib/workouts'
 import Sheet from './Sheet'
 
 const activities = ['run', 'walk', 'cycle', 'swim', 'elliptical', 'row', 'other'] as const
@@ -251,6 +252,7 @@ function DetailSheet({ ex, onClose }: { ex: Exercise; onClose: () => void }) {
         {ex.s.length > 0 && <><dt>{t('workout.secondary')}</dt><dd>{ex.s.map(m => muscleName(m, lang)).join(', ')}</dd></>}
         {ex.q && <><dt>{t('workout.equipment')}</dt><dd>{equipmentName(ex.q, lang)}</dd></>}
       </dl>
+      <Progress exId={ex.id} />
       {!ex.custom && (
         <>
           <h3 className="ex-h">{t('workout.howTo')} {lang === 'ro' && <small className="muted">(în engleză)</small>}</h3>
@@ -260,6 +262,84 @@ function DetailSheet({ ex, onClose }: { ex: Exercise; onClose: () => void }) {
         </>
       )}
     </Sheet>
+  )
+}
+
+function Progress({ exId }: { exId: string }) {
+  const { t, lang } = useI18n()
+  const [p, setP] = useState<ReturnType<typeof progress> | 'error' | null>(null)
+  useEffect(() => { loadHistory(exId).then(s => setP(progress(s)), () => setP('error')) }, [exId])
+
+  const locale = lang === 'ro' ? 'ro-RO' : 'en-GB'
+  const kg = (n: number) => n.toLocaleString(locale, { maximumFractionDigits: 1 })
+  const set = (s: HistSet) => (s.weight_kg > 0 ? `${s.reps} × ${kg(s.weight_kg)} kg` : `${s.reps} ${t('workout.repsShort')}`)
+  const date = (d: string) => new Date(`${d}T12:00`).toLocaleDateString(locale, { day: 'numeric', month: 'short' })
+
+  let body
+  if (p === 'error') body = <p className="muted">{t('workout.historyNeedNet')}</p>
+  else if (p === null) body = <p className="muted">{t('common.loading')}</p>
+  else if (!p.record) body = <p className="muted">{t('workout.noHistory')}</p>
+  else {
+    // today's sets are on the card already: "last time" is the session before today
+    const last = p.sessions.filter(s => s.day < localDay()).pop()
+    const weighted = p.bestE1rm > 0
+    body = (
+      <>
+        <div className="stats-line">
+          <span>{t('workout.record')} <b>{set(p.record)}</b></span>
+          {weighted && <span>{t('workout.e1rm')} <b>~{kg(p.bestE1rm)}</b> kg</span>}
+        </div>
+        {last && (
+          <p className="progress-last">
+            {t('workout.lastTime')} ({date(last.day)}): {last.sets.map(set).join(', ')}
+            <br /><b>{t('workout.tryToday')}: {set(suggest(last.top))}</b>
+          </p>
+        )}
+        {p.sessions.length > 1 && <Chart sessions={p.sessions} label={t(weighted ? 'workout.chartE1rm' : 'workout.chartReps')} date={date} fmt={kg} />}
+        <details className="progress-all">
+          <summary>{t('workout.allSessions')} ({p.sessions.length})</summary>
+          <ul>{[...p.sessions].reverse().map(s => <li key={s.day}><span className="muted">{date(s.day)}</span> {s.sets.map(set).join(', ')}</li>)}</ul>
+        </details>
+      </>
+    )
+  }
+  return <><h3 className="ex-h">{t('workout.progress')}</h3>{body}</>
+}
+
+// one line, best of each session; tap a point to read it (the last one is shown first)
+function Chart({ sessions, label, date, fmt }: { sessions: Session[]; label: string; date: (d: string) => string; fmt: (n: number) => string }) {
+  const [sel, setSel] = useState(sessions.length - 1)
+  const W = 300, H = 130, L = 34, R = 10, T = 26, B = 20
+  const ys = sessions.map(s => s.best)
+  const lo = Math.min(...ys), hi = Math.max(...ys)
+  const pad = (hi - lo) * 0.1 || 1
+  const x = (i: number) => L + (i * (W - L - R)) / (sessions.length - 1)
+  const y = (v: number) => T + ((hi + pad - v) * (H - T - B)) / (hi - lo + 2 * pad)
+  const s = sessions[sel]
+  return (
+    <figure className="chart">
+      <figcaption className="muted">{label}</figcaption>
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${label}: ${sessions.map(s => `${date(s.day)} ${fmt(s.best)}`).join(', ')}`}>
+        {[...new Set([hi, lo])].map(v => (
+          <g key={v}>
+            <line x1={L} x2={W - R} y1={y(v)} y2={y(v)} className="chart-grid" />
+            <text x={L - 6} y={y(v) + 4} textAnchor="end" className="chart-axis">{fmt(v)}</text>
+          </g>
+        ))}
+        <text x={L} y={H - 4} className="chart-axis">{date(sessions[0].day)}</text>
+        <text x={W - R} y={H - 4} textAnchor="end" className="chart-axis">{date(sessions[sessions.length - 1].day)}</text>
+        <polyline points={sessions.map((s, i) => `${x(i)},${y(s.best)}`).join(' ')} className="chart-line" />
+        <text x={Math.min(Math.max(x(sel), L + 30), W - R - 30)} y={y(s.best) - 10} textAnchor="middle" className="chart-tip">
+          {fmt(s.best)} · {date(s.day)}
+        </text>
+        {sessions.map((s, i) => (
+          <g key={s.day} onClick={() => setSel(i)}>
+            <circle cx={x(i)} cy={y(s.best)} r={i === sel ? 5 : 4} className="chart-dot" />
+            <circle cx={x(i)} cy={y(s.best)} r={16} fill="transparent" />
+          </g>
+        ))}
+      </svg>
+    </figure>
   )
 }
 

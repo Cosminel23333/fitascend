@@ -390,6 +390,19 @@ button { font: inherit; color: inherit; }
 .ex-facts dt { color: var(--muted); }
 .ex-facts dd { margin: 0; }
 .ex-h { font-size: 15px; margin: 0 0 8px; }
+.progress-last { font-size: 14px; line-height: 1.5; margin: 10px 0 0; color: var(--muted); }
+.progress-last b { color: var(--text); }
+.chart { margin: 14px 0 0; }
+.chart figcaption { font-size: 12px; margin-bottom: 4px; }
+.chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+.chart-grid { stroke: var(--line); stroke-width: 1; }
+.chart-axis { fill: var(--muted); font-size: 10px; }
+.chart-tip { fill: var(--text); font-size: 11px; font-weight: 700; }
+.chart-line { fill: none; stroke: var(--orange); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.chart-dot { fill: var(--orange); stroke: var(--bg); stroke-width: 2; }
+.progress-all { margin: 12px 0 16px; font-size: 14px; }
+.progress-all summary { cursor: pointer; color: var(--ochre); }
+.progress-all ul { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 6px; }
 .ex-steps { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: 14px; line-height: 1.45; color: rgba(251, 238, 240, 0.85); }
 
 /* bottom sheet */
