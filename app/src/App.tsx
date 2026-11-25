@@ -79,7 +79,7 @@ function Shell({ uid, profile, update }: { uid: string; profile: Profile; update
         <SyncPill uid={uid} />
         {tab === 'today' && <Today uid={uid} profile={profile} update={update} />}
         {tab === 'calculator' && <Calculator profile={profile} onChange={update} />}
-        {tab === 'workout' && <Workout uid={uid} />}
+        {tab === 'workout' && <Workout uid={uid} home={home} />}
         {tab === 'calendar' && <Calendar uid={uid} profile={profile} update={update} home={home} />}
         {tab === 'profile' && (
           <>

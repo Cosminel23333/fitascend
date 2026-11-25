@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { mergeOps } from './day'
 import type { Exercise } from './exercises'
 import { pending } from './outbox'
-import type { HistSet } from './progress'
+import type { HistRow } from './progress'
 import { save, supabase } from './sync'
 import { uuid } from './uuid'
 
@@ -92,13 +92,20 @@ export function useWorkouts(uid: string, day: string) {
   return { workouts, sets, status, saveWorkout, removeWorkout, addSet, removeSet }
 }
 
-// every set of one exercise, with its day; throws when offline
+// every set of one exercise (or of all of them), with its day; throws when offline
 // shortcut: sets still waiting in the outbox are left out, merge them if offline history matters
-export async function loadHistory(exerciseId: string): Promise<HistSet[]> {
-  const { data, error } = await supabase.from('workout_sets').select('reps, weight_kg, workouts(day)').eq('exercise_id', exerciseId)
-  if (error) throw error
-  return (data as unknown as { reps: number; weight_kg: number; workouts: { day: string } }[])
-    .map(s => ({ day: s.workouts.day, reps: s.reps, weight_kg: s.weight_kg }))
+export async function loadSets(exerciseId?: string): Promise<HistRow[]> {
+  const out: HistRow[] = []
+  // the API returns at most 1000 rows per request: page until a short page
+  for (let from = 0; ; from += 1000) {
+    let q = supabase.from('workout_sets').select('exercise_id, exercise_name, reps, weight_kg, workouts(day)').order('id').range(from, from + 999)
+    if (exerciseId) q = q.eq('exercise_id', exerciseId)
+    const { data, error } = await q
+    if (error) throw error
+    const rows = data as unknown as { exercise_id: string; exercise_name: string; reps: number; weight_kg: number; workouts: { day: string } }[]
+    out.push(...rows.map(s => ({ exercise_id: s.exercise_id, exercise_name: s.exercise_name, day: s.workouts.day, reps: s.reps, weight_kg: s.weight_kg })))
+    if (rows.length < 1000) return out
+  }
 }
 
 // the user's own exercises, shaped like library ones so search treats them the same

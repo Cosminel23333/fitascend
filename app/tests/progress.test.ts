@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { e1rm, progress, suggest } from '../src/lib/progress'
+import { byExercise, e1rm, progress, suggest } from '../src/lib/progress'
 
 describe('e1rm', () => {
   it('uses Epley, a single rep is the max', () => {
@@ -26,6 +26,15 @@ describe('progress', () => {
     expect(p.sessions[0].best).toBe(15)
     expect(p.bestE1rm).toBe(0)
     expect(progress([])).toEqual({ sessions: [], record: null, bestE1rm: 0 })
+  })
+})
+
+describe('byExercise', () => {
+  it('groups by exercise, most recently trained first', () => {
+    const r = (exercise_id: string, day: string, reps = 8) => ({ exercise_id, exercise_name: exercise_id.toUpperCase(), day, reps, weight_kg: 50 })
+    const list = byExercise([r('a', '2026-11-01'), r('b', '2026-11-20'), r('a', '2026-11-10', 10)])
+    expect(list.map(x => [x.id, x.name, x.sessions.length])).toEqual([['b', 'B', 1], ['a', 'A', 2]])
+    expect(list[1].record?.reps).toBe(10)
   })
 })
 
