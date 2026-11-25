@@ -187,7 +187,7 @@ export default function Today({ uid, profile, update, day = localDay() }: { uid:
         )}
       </section>
 
-      {open?.type === 'meal' && <MealSheet entry={open.entry} isSaved={isSaved} onClose={close} onDelete={id => { remove(id); close() }}
+      {open?.type === 'meal' && <MealSheet uid={uid} entry={open.entry} isSaved={isSaved} onClose={close} onDelete={id => { remove(id); close() }}
         onSave={(e, keep) => {
           put(e)
           const meal = { ...(e.data as Omit<SavedMeal, 'kcal'>), kcal: e.value ?? 0 }
@@ -245,7 +245,8 @@ function StatButton({ label, value, unit, note, onClick }: { label: string; valu
   )
 }
 
-function MealSheet({ entry, isSaved, onSave, onDelete, onClose }: {
+function MealSheet({ uid, entry, isSaved, onSave, onDelete, onClose }: {
+  uid: string
   entry?: Entry
   isSaved: (name: string) => boolean
   onSave: (e: Pick<Entry, 'kind' | 'value' | 'data'> & Partial<Pick<Entry, 'id' | 'created_at'>>, keep: boolean) => void
@@ -276,7 +277,7 @@ function MealSheet({ entry, isSaved, onSave, onDelete, onClose }: {
 
   return (
     <Sheet title={entry ? t('today.editMeal') : t('today.addMeal')} onClose={onClose}>
-      <FoodScan onFill={setScanned} />
+      <FoodScan uid={uid} onFill={setScanned} />
       {/* key: a scan refills every field */}
       <form className="form" onSubmit={submit} key={scanned ? JSON.stringify(scanned) : 'typed'}>
         <label className="field"><span>{t('today.mealName')}</span><input name="name" required defaultValue={String(d.name ?? '')} /></label>

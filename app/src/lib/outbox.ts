@@ -1,6 +1,6 @@
 // Queue of writes not yet sent to the cloud. Rows live here only until the server accepts them.
 
-export type Table = 'profiles' | 'workouts' | 'workout_sets' | 'entries' | 'custom_exercises'
+export type Table = 'profiles' | 'workouts' | 'workout_sets' | 'entries' | 'custom_exercises' | 'foods'
 export type Op =
   | { op: 'upsert'; table: Table; row: Record<string, unknown>; userId: string }
   | { op: 'delete'; table: Table; id: string; userId: string }

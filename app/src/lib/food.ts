@@ -1,8 +1,28 @@
-// Packaged food: barcode lookup in the free open databases and reading a nutrition label photo.
+// Packaged food: barcode lookup in the app's own shared list, then the free open databases.
+import { pending } from './outbox'
+import { save, supabase } from './sync'
+import { uuid } from './uuid'
+
 export type Per100 = { kcal: number; protein: number | null; carbs: number | null; fat: number | null }
 export type Food = { name: string; brand: string | null; per100: Per100; serving: number | null; source: string }
+type FoodRow = { id: string; barcode: string; name: string; kcal: number; protein: number | null; carbs: number | null; fat: number | null; serving_g: number | null; created_at: string }
 
 const num = (v: unknown) => (v === undefined || v === null || v === '' || !Number.isFinite(Number(v)) ? null : Math.round(Number(v) * 10) / 10)
+const fromRow = (r: FoodRow): Food => ({ name: r.name, brand: null, per100: { kcal: r.kcal, protein: r.protein, carbs: r.carbs, fat: r.fat }, serving: r.serving_g, source: 'FitAscend' })
+
+// products FitAscend users typed in themselves (newest wins), including one just added and not yet sent
+async function own(code: string): Promise<Food | null> {
+  const waiting = pending().filter(o => o.op === 'upsert' && o.table === 'foods' && o.row.barcode === code).pop()
+  if (waiting && waiting.op === 'upsert') return fromRow(waiting.row as FoodRow)
+  const { data } = await supabase.from('foods').select('*').eq('barcode', code).order('created_at', { ascending: false }).limit(1)
+  return data?.[0] ? fromRow(data[0] as FoodRow) : null
+}
+
+export function saveFood(uid: string, barcode: string, name: string, p: Per100, serving: number | null) {
+  const row: FoodRow = { id: uuid(), barcode, name, ...p, serving_g: serving, created_at: new Date().toISOString() }
+  save({ op: 'upsert', table: 'foods', row, userId: uid })
+  return fromRow(row)
+}
 
 // Open Food Facts: worldwide, community-made, strong on European (and Romanian) products
 async function openFoodFacts(code: string): Promise<Food | null> {
@@ -48,47 +68,13 @@ async function usda(code: string): Promise<Food | null> {
 }
 
 export async function lookupBarcode(code: string): Promise<Food | null> {
-  for (const source of [openFoodFacts, usda]) {
+  for (const source of [own, openFoodFacts, usda]) {
     try {
       const food = await source(code)
       if (food) return food
     } catch { /* this database is unreachable: try the next one */ }
   }
   return null
-}
-
-// first number on the label line for a nutrient: labels list "per 100 g" before "per portion"
-const firstNumber = (line: string) => {
-  const m = line.replace(/(\d)\s*[,.]\s*(\d)/g, '$1.$2').match(/(\d+(?:\.\d+)?)\s*g\b/i) ?? line.match(/(\d+(?:[.,]\d+)?)/)
-  return m ? Number(m[1].replace(',', '.')) : null
-}
-
-// Romanian or English nutrition table text (from OCR) -> values per 100 g
-export function parseLabel(text: string): Per100 | null {
-  const lines = text.split(/\n/).map(l => l.trim()).filter(Boolean)
-  const flat = text.replace(/\s+/g, ' ')
-  const kcalMatch = flat.match(/(\d+(?:[.,]\d+)?)\s*kcal/i)
-  const kjMatch = flat.match(/(\d+(?:[.,]\d+)?)\s*kj/i)
-  const pick = (yes: RegExp, no: RegExp) => {
-    const line = lines.find(l => yes.test(l) && !no.test(l))
-    return line ? firstNumber(line.replace(yes, ' ')) : null
-  }
-  const fat = pick(/gr[aă]sim[ie]|lipide|\bfat\b|fett/i, /satura|din care|of which|acizi/i)
-  const carbs = pick(/glucide|carbohidra[tț]i|carbohydrate|hidra[tț]i de carbon|kohlenhydrate/i, /zah[aă]r|sugar|din care|of which/i)
-  const protein = pick(/prote[i1]n/i, /^$/)
-  let kcal = kcalMatch ? Number(kcalMatch[1].replace(',', '.')) : kjMatch ? Math.round(Number(kjMatch[1].replace(',', '.')) / 4.184) : null
-  const energy = (f: number | null, c: number | null, p: number | null) => 9 * (f ?? 0) + 4 * (c ?? 0) + 4 * (p ?? 0)
-  // no energy line read: work it out from the macros
-  if (kcal === null && (fat ?? carbs ?? protein) !== null) kcal = Math.round(energy(fat, carbs, protein))
-  if (kcal === null || kcal > 950) return null
-  // OCR often drops the decimal comma ("12,5" -> "125"): keep whichever reading agrees with the label's energy
-  let best = { fat, carbs, protein }
-  for (let mask = 1; mask < 8; mask++) {
-    const fix = (v: number | null, bit: number) => (v !== null && mask & bit ? v / 10 : v)
-    const t = { fat: fix(fat, 1), carbs: fix(carbs, 2), protein: fix(protein, 4) }
-    if (Math.abs(energy(t.fat, t.carbs, t.protein) - kcal) < Math.abs(energy(best.fat, best.carbs, best.protein) - kcal) - kcal * 0.05) best = t
-  }
-  return { kcal, ...best }
 }
 
 // values for the grams actually eaten
