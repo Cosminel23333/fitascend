@@ -7,6 +7,7 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 **Figura 3D (cerută de tine) în loc de silueta 2D:** hologramă cyan transparentă (piele, cum ai cerut: „să fie tot așa albastru și transparent”), scheletul vizibil, mușchii lucrați în ultimele 7 zile pulsează roșu; pornește din față și se rotește singură 360° în 30 s; inel luminos la picioare. `pages/Body3D.tsx` (Three.js 0.186.1, încărcat separat doar în pagina Progres), model `app/public/models/body.glb` (1,7 MB). Dacă WebGL nu merge → silueta 2D veche. Zonele mușchilor = elipsoide în metri (ZONES din Body3D.tsx): se pot ajusta dacă roșul nu cade exact pe mușchi.
 - Model: BodyParts3D (DBCLS), licență CC BY 4.0 → mențiunea e sub figură (obligatorie). Lipsesc din bază drept abdominal și dorsal mare, dar zonele colorează ce e în regiune.
 - Higgsfield n-a fost folosit: 3 credite în cont, un model 3D costă 7–25.
+- La cererea ta, organele genitale au fost scoase din piele (aspect de manechin): în `to_glb.py`, funcția `mannequin` taie triunghiurile din zona |x|<4,5 cm, y 0,765–0,87 m, z>1,8 cm și acoperă golul cu o suprafață.
 - Cum am construit body.glb (scripturi în scratchpad, nu în repo): arhiva isa_BP3D_4.0_obj_99.zip → mușchi/oase/piele după ierarhia is-a (FMA5022/5018/7163) → `to_glb.py` → gltf-transform + meshoptimizer (26k/34k/46k triunghiuri, quantize, meshopt).
 
 ## Înainte (2026-11-25, noaptea)
@@ -99,3 +100,4 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 - 2026-11-25: pagina Progres și tehnică (`pages/Progress.tsx`, `lib/videos.ts`, `byExercise` + test, `loadSets` cu paginare de 1000); 42 de teste; verificat în browser simulat (video rulează, grafic animat)
 - 2026-11-25: V2.4 rest (volum/frecvență/harta mușchilor) + ferestre sus. Capcană: clasa CSS `.bar` (macronutrienți, height 6px) se aplica și pe `<rect>` SVG → redenumit `wk-bar`
 - 2026-11-26: figura 3D hologramă (BodyParts3D + Three.js, shader propriu: fresnel cyan + zone roșii pulsând); verificat în browser simulat (pornește din față, se rotește, roșu pe piept/brațe)
+- 2026-11-26: tu: scoate penisul din model → tăiat din piele + gol acoperit; verificat din față și profil
