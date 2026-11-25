@@ -112,6 +112,9 @@ export function useCustomExercises(uid: string) {
   }, [uid])
 
   const add = (name: string): Exercise => {
+    // same name again: reuse it, otherwise its history would split across two ids
+    const found = list.find(e => e.n.toLowerCase() === name.toLowerCase())
+    if (found) return found
     const row = { id: uuid(), name, muscles: [] as string[], created_at: new Date().toISOString() }
     save({ op: 'upsert', table: 'custom_exercises', row, userId: uid })
     const ex: Exercise = { id: row.id, n: name, m: [], s: [], q: null, c: 'strength', i: 0, custom: true }

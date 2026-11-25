@@ -63,7 +63,7 @@ export default function Workout({ uid, day = localDay(), embedded = false }: { u
       </section>
 
       {workouts.map(w => w.kind === 'strength' ? (
-        <StrengthCard key={w.id} sets={sets.filter(s => s.workout_id === w.id)} drafts={drafts[w.id] ?? []} time={time(w.created_at)}
+        <StrengthCard key={w.id} day={day} sets={sets.filter(s => s.workout_id === w.id)} drafts={drafts[w.id] ?? []} time={time(w.created_at)}
           onAddExercise={() => setOpen({ type: 'search', workoutId: w.id })}
           onDetail={id => { const ex = lookup(id); if (ex) setOpen({ type: 'detail', ex }) }}
           onAddSet={(ex, reps, kg) => addSet(w.id, ex, reps, kg)}
@@ -109,8 +109,8 @@ function Pace({ km, min, cycling }: { km: number | null; min: number | null; cyc
   return <span>{t('workout.pace')} <b>{Math.floor(p)}:{String(Math.round((p % 1) * 60)).padStart(2, '0')}</b> /km</span>
 }
 
-function StrengthCard({ sets, drafts, time, onAddExercise, onDetail, onAddSet, onRemoveSet, onDelete }: {
-  sets: WSet[]; drafts: Ex[]; time: string
+function StrengthCard({ day, sets, drafts, time, onAddExercise, onDetail, onAddSet, onRemoveSet, onDelete }: {
+  day: string; sets: WSet[]; drafts: Ex[]; time: string
   onAddExercise: () => void; onDetail: (id: string) => void
   onAddSet: (ex: Ex, reps: number, kg: number) => void; onRemoveSet: (id: string) => void; onDelete: () => void
 }) {
@@ -128,7 +128,7 @@ function StrengthCard({ sets, drafts, time, onAddExercise, onDetail, onAddSet, o
         {volume > 0 && <small className="muted">{t('workout.volume')} {Math.round(volume).toLocaleString(lang === 'ro' ? 'ro-RO' : 'en-GB')} kg</small>}
       </div>
       {groups.map(g => (
-        <ExerciseBlock key={g.id} ex={g} sets={sets.filter(s => s.exercise_id === g.id).sort((a, b) => a.set_no - b.set_no)}
+        <ExerciseBlock key={g.id} ex={g} day={day} sets={sets.filter(s => s.exercise_id === g.id).sort((a, b) => a.set_no - b.set_no)}
           onDetail={() => onDetail(g.id)} onAddSet={(r, kg) => onAddSet(g, r, kg)} onRemoveSet={onRemoveSet} />
       ))}
       <button className="btn wide" style={{ marginTop: 12 }} onClick={onAddExercise}>+ {t('workout.addExercise')}</button>
@@ -137,13 +137,19 @@ function StrengthCard({ sets, drafts, time, onAddExercise, onDetail, onAddSet, o
   )
 }
 
-function ExerciseBlock({ ex, sets, onDetail, onAddSet, onRemoveSet }: {
-  ex: Ex; sets: WSet[]; onDetail: () => void; onAddSet: (reps: number, kg: number) => void; onRemoveSet: (id: string) => void
+function ExerciseBlock({ ex, day, sets, onDetail, onAddSet, onRemoveSet }: {
+  ex: Ex; day: string; sets: WSet[]; onDetail: () => void; onAddSet: (reps: number, kg: number) => void; onRemoveSet: (id: string) => void
 }) {
   const { t, lang } = useI18n()
   const [error, setError] = useState('')
   const last = sets[sets.length - 1]
   const fmtKg = (n: number) => n.toLocaleString(lang === 'ro' ? 'ro-RO' : 'en-GB')
+  const hist = useHistory(ex.id)
+  const f = useFmt()
+  const ok = hist && hist !== 'error' ? hist : null
+  const prev = ok?.sessions.filter(s => s.day < day).pop()
+  const hint = prev ? suggest(prev.top) : undefined
+  const fill = last ?? hint
 
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -158,6 +164,13 @@ function ExerciseBlock({ ex, sets, onDetail, onAddSet, onRemoveSet }: {
   return (
     <div className="exercise">
       <button className="exercise-name" onClick={onDetail}>{ex.n} <span aria-hidden="true">ⓘ</span></button>
+      {prev && hint && (
+        <p className="progress-last">
+          {t('workout.lastTime')} ({f.date(prev.day)}): {prev.sets.map(f.set).join(', ')}
+          <br /><b>{t('workout.tryToday')}: {f.set(hint)}</b>
+          {ok?.record && <> · {t('workout.record')} {f.set(ok.record)}</>}
+        </p>
+      )}
       {sets.length > 0 && (
         <ol className="sets">
           {sets.map(s => (
@@ -169,11 +182,11 @@ function ExerciseBlock({ ex, sets, onDetail, onAddSet, onRemoveSet }: {
           ))}
         </ol>
       )}
-      {/* key resets the inputs to the last set's values after each add */}
-      <form className="set-form" onSubmit={submit} key={last?.id ?? 'first'}>
-        <input name="reps" inputMode="numeric" placeholder={t('workout.reps')} aria-label={t('workout.reps')} defaultValue={last?.reps ?? ''} />
+      {/* key resets the inputs after each add, or once the suggestion arrives: last set's values, else the suggestion */}
+      <form className="set-form" onSubmit={submit} key={last?.id ?? (hint ? 'hint' : 'first')}>
+        <input name="reps" inputMode="numeric" placeholder={t('workout.reps')} aria-label={t('workout.reps')} defaultValue={fill?.reps ?? ''} />
         <span className="muted">×</span>
-        <input name="kg" inputMode="decimal" placeholder="kg" aria-label="kg" defaultValue={last ? String(last.weight_kg).replace('.', lang === 'ro' ? ',' : '.') : ''} />
+        <input name="kg" inputMode="decimal" placeholder="kg" aria-label="kg" defaultValue={fill ? String(fill.weight_kg).replace('.', lang === 'ro' ? ',' : '.') : ''} />
         <button className="btn">+ {t('workout.addSet')}</button>
       </form>
       {error && <p className="error" role="alert">{error}</p>}
@@ -265,15 +278,25 @@ function DetailSheet({ ex, onClose }: { ex: Exercise; onClose: () => void }) {
   )
 }
 
-function Progress({ exId }: { exId: string }) {
-  const { t, lang } = useI18n()
+function useHistory(exId: string) {
   const [p, setP] = useState<ReturnType<typeof progress> | 'error' | null>(null)
   useEffect(() => { loadHistory(exId).then(s => setP(progress(s)), () => setP('error')) }, [exId])
+  return p
+}
 
+function useFmt() {
+  const { t, lang } = useI18n()
   const locale = lang === 'ro' ? 'ro-RO' : 'en-GB'
   const kg = (n: number) => n.toLocaleString(locale, { maximumFractionDigits: 1 })
   const set = (s: HistSet) => (s.weight_kg > 0 ? `${s.reps} × ${kg(s.weight_kg)} kg` : `${s.reps} ${t('workout.repsShort')}`)
   const date = (d: string) => new Date(`${d}T12:00`).toLocaleDateString(locale, { day: 'numeric', month: 'short' })
+  return { kg, set, date }
+}
+
+function Progress({ exId }: { exId: string }) {
+  const { t } = useI18n()
+  const p = useHistory(exId)
+  const { kg, set, date } = useFmt()
 
   let body
   if (p === 'error') body = <p className="muted">{t('workout.historyNeedNet')}</p>
