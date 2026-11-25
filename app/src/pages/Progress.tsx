@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { localDay } from '../lib/day'
 import { loadExercises, muscleName, type Exercise } from '../lib/exercises'
 import { useI18n } from '../lib/i18n'
@@ -22,6 +22,9 @@ export function useFmt() {
 }
 
 type Item = ReturnType<typeof byExercise>[number]
+
+// three.js is big: its own chunk, fetched only when this page shows the figure
+const Body3D = lazy(() => import('./Body3D'))
 
 // every exercise the user has trained; tapping one opens its chart and how-to clip
 export default function ProgressPage({ onBack }: { onBack: () => void }) {
@@ -85,6 +88,9 @@ function Overview({ rows, library }: { rows: HistRow[]; library: Exercise[] }) {
   const weeks = useMemo(() => weekly(rows, today), [rows, today])
   const load = useMemo(() => muscleSets(rows, id => library.find(e => e.id === id), today), [rows, library, today])
   const top = Object.entries(load).sort((a, b) => b[1] - a[1])
+  // no WebGL or the model failed to load: the flat map still shows the week
+  const [flat, setFlat] = useState(false)
+  const fail = useCallback(() => setFlat(true), [])
   return (
     <>
       <section className="card">
@@ -102,7 +108,12 @@ function Overview({ rows, library }: { rows: HistRow[]; library: Exercise[] }) {
       </section>
       <section className="card">
         <h2>{t('pr.muscles')}</h2>
-        <MuscleMap load={load} name={m => muscleName(m, lang)} />
+        {flat ? <MuscleMap load={load} name={m => muscleName(m, lang)} /> : (
+          <>
+            <Suspense fallback={<div className="body3d" />}><Body3D load={load} onFail={fail} /></Suspense>
+            <small className="muted body3d-credit">{t('pr.modelCredit')}</small>
+          </>
+        )}
         {top.length > 0
           ? <ul className="pr-muscles">{top.map(([m, n]) => <li key={m}><span>{muscleName(m, lang)}</span><b>{f.kg(n)} {t('pr.setsShort')}</b></li>)}</ul>
           : <p className="muted" style={{ margin: '12px 0 0' }}>{t('pr.noMuscles')}</p>}
