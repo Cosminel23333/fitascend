@@ -5,7 +5,9 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 
 ## Unde am rămas (2026-11-25)
 **V2.4 partea 1, Progres pe exercițiu: publicat (6ffefe5).** În fișa exercițiului (ⓘ / i) apare „Progresul tău”: recordul (cea mai grea serie), 1RM estimat (Epley), „Data trecută” + „Azi încearcă” (progresie dublă: +1 rep până la 12, apoi +2,5 kg și 8 rep.), un grafic al 1RM-ului pe sesiuni (atingi un punct și vezi valoarea) și lista „Toate sesiunile”. Calculele sunt în `lib/progress.ts` (cu test), citirea în `loadHistory` (workouts.ts). Verificat în browser cu date simulate. Merge doar cu internet.
-- V2.4 rămas: grafice de volum/frecvență, harta mușchilor lucrați, eventual „Data trecută” direct sub exercițiu în cardul de antrenament.
+- **Și în cardul de antrenament (a9ad718):** sub fiecare exercițiu: „Data trecută (data): serii”, „Azi încearcă: …” și „Record …”; câmpurile reps × kg vin precompletate cu sugestia. Tu ai cerut asta: nu găseai progresul (era doar în fișa ⓘ).
+- Exercițiu propriu cu același nume = refolosit (înainte făcea unul nou și istoricul se rupea).
+- V2.4 rămas: grafice de volum/frecvență, harta mușchilor lucrați.
 
 **V2.1 Mese salvate: publicat, testat de tine pe telefon (ok).** Cum funcționează: bifa „Salvează în Mesele mele” în fereastra mesei; masa apare ca buton „+” deasupra lui „Adaugă masă” și se adaugă cu o atingere; „Modifică” le șterge. Sunt ținute în profil (`saved_meals`), deci merg și fără semnal.
 - C: are acum 76 GB liberi (rezolvat). Parolele sunt amânate (decizia ta).
@@ -21,8 +23,8 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 - ✔ V2.3 în lucru: splash cu logo-ul (tunel de lumină roșu/auriu la pornire; logo 3D cu bară de lumină la schimbarea paginii). Ultima corectură (bara traversează tot logo-ul, decupată pe colțurile rotunjite) e publicată (213e6a9). **Nu am primit încă părerea ta de pe telefon.**
 
 ## Pașii următori
-1. Tu: testezi „Progresul tău” pe telefon, pe un exercițiu pe care l-ai mai făcut
-2. Apoi: restul V2.4 (volum/frecvență, harta mușchilor) sau „Data trecută” în cardul de antrenament
+1. Tu: adaugi azi exercițiul pus acum 2 zile → trebuie să vezi sub el seriile vechi, sugestia și recordul
+2. Apoi: restul V2.4 (volum/frecvență, harta mușchilor) sau altă funcție V2
 3. Tot deschis: părerea ta despre splash; întrebările:
    - fac iconița de pe ecranul iPhone-ului din „App icon logo”?
    - golesc cache-ul npm (~1 GB pe C:)? E sigur, se redescarcă la nevoie.
@@ -70,3 +72,4 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 - 2026-11-25: V2.1 mese salvate (Today.tsx, `setSaved` în profile.ts + test, coloana `saved_meals`); 37 de teste ok, build ok; SQL rulat de tine → publicat (deploy-pages a picat o dată temporar, re-rulat cu commit gol)
 - 2026-11-25: mesele salvate confirmate pe telefon. V2.4 partea 1: progres pe exercițiu (record, 1RM, sugestie, grafic); 41 de teste ok; previzualizare cu playwright-cli și Supabase simulat (sesiune falsă în localStorage + route)
 - 2026-11-25: publicarea pica la 4 din 8 rulări (deploy-pages) → adăugat reîncercare automată în deploy.yml; testat, a mers din a doua încercare; site-ul are progresul
+- 2026-11-25: tu: progresul nu apărea în antrenament → mutat și sub exercițiu în card + precompletare; verificat în browser simulat
