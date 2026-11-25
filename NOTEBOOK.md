@@ -3,67 +3,28 @@
 ## Scop
 Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva prieteni. Adună într-un singur loc antrenamentele, mesele, apa, somnul, pașii și restul, cu un calendar central. Cost 0 lei.
 
-## Unde am rămas (2026-11-26, și mai târziu)
-**Poza la etichetă SCOASĂ** (tu: „nu prea merge și e greu să faci poza”; tesseract.js dezinstalat). În loc: cod negăsit → formular „Produs nou” (nume, kcal/100 g, P/C/G, porție opțională) → „Salvează produsul” → se salvează în tabelul comun `foods` (toți utilizatorii aplicației îl găsesc la următoarea scanare) → alegi gramele → formularul mesei se completează. Căutare: întâi `foods` (FitAscend), apoi Open Food Facts, apoi USDA. Testat cap-coadă cu un cod inexistent (9582716304401).
-- ✔ `2026-11-26_foods.sql` rulat de tine și verificat (tabelul există, închis pentru cei nelogați). Notă: Supabase avertizează „destructive operations” la `drop policy if exists` / `revoke`; e normal pentru fișierele noastre. Până atunci produsele noi nu se salvează (masa se completează totuși).
+## Unde am rămas (2026-11-26, final de zi)
+Totul e publicat la https://cosminel23333.github.io/fitascend/ și salvat pe GitHub. Toate SQL-urile sunt rulate.
 
-## Înainte (2026-11-26, noaptea târziu)
-**V2.5 Coduri de bare + poză la etichetă (gata, publicat):** în „Adaugă masă” sus: „Scanează codul” (camera live în aplicație/web; dacă nu merge camera → „Poză la cod”) și „Poză la etichetă”. Cod → Open Food Facts (mondial, multe produse RO), apoi USDA (DEMO_KEY, ~30 căutări/oră). Etichetă → OCR pe telefon (tesseract.js, ron+eng; prima dată descarcă câțiva MB) → kcal/grăsimi/glucide/proteine la 100 g (+ corectează virgula pierdută folosind caloriile). Apoi „Cât ai mâncat (g)” (implicit porția produsului sau 100) → „Completează” umple formularul; poți corecta. `lib/food.ts` (+ teste), `pages/FoodScan.tsx`. Am scos și tastatura automată din fereastra mesei.
-- Verificat în browser: cod Coca-Cola din poză → găsit, 330 g → 145 kcal; etichetă generată → 250 kcal, 12,5 G, 30 C, 5,2 P. Camera live NU se poate testa la mine (fără cameră) → de verificat pe iPhone.
+**Ce e gata (V1 + V2 până acum):**
+- **V1:** cont, profil, calculator calorii; Azi (mese, apă, somn, pași, timp pe telefon, greutate, suplimente); Antrenament (876 exerciții, serii × kg, cardio, HIIT, exerciții proprii); Calendar; pași + somn din Apple Health prin Scurtătură; merge fără semnal (coada de netrimise)
+- **V2.1 Mese salvate:** bifa „Salvează în Mesele mele”, apoi adaugi cu o atingere (în profil, `saved_meals`). Confirmat de tine.
+- **V2.3 Splash cu logo** (tunel de lumină + bară pe logo). Părerea ta de pe telefon încă nu am primit-o.
+- **V2.4 Progres (complet):**
+  - sub fiecare exercițiu din antrenament: „Data trecută”, „Azi încearcă” (progresie dublă) și „Record”; câmpurile vin precompletate
+  - buton „Progres și tehnică” sus în Antrenament: bare pe săptămâni (Volum / Frecvență), **figura 3D hologramă** (BodyParts3D, CC BY 4.0; mușchii lucrați în 7 zile pulsează roșu; rotire 360° în 30 s; organele genitale scoase la cererea ta), lista exercițiilor făcute → fiecare cu videoclipul tău Higgsfield + Record/1RM/Sesiuni + grafic animat
+  - fișa ⓘ arată videoclipul tău (110 clipuri, linkuri de pe CDN-ul Higgsfield; dacă le ștergi acolo, dispar și aici)
+- **V2.5 Coduri de bare:** „Scanează codul” în „Adaugă masă” (camera live; rezervă: „Poză la cod”). Caută în: produsele adăugate de voi (tabelul comun `foods`) → Open Food Facts → USDA (DEMO_KEY, ~30/oră). Negăsit → „Produs nou” (valori la 100 g de pe ambalaj, o singură dată, apoi îl găsește oricine). Alegi gramele → masa se completează. Poza la etichetă (OCR) a fost scoasă la cererea ta.
+- **Reparații de interfață:** ferestrele de completare apar sus (nu le mai împinge tastatura), fără tastatură automată la masă; apăsarea din nou pe tab-ul curent te duce la prima vedere (ex. din zi înapoi la lună în Calendar)
 
-## Înainte (2026-11-26, după miezul nopții)
-**Figura 3D (cerută de tine) în loc de silueta 2D:** hologramă cyan transparentă (piele, cum ai cerut: „să fie tot așa albastru și transparent”), scheletul vizibil, mușchii lucrați în ultimele 7 zile pulsează roșu; pornește din față și se rotește singură 360° în 30 s; inel luminos la picioare. `pages/Body3D.tsx` (Three.js 0.186.1, încărcat separat doar în pagina Progres), model `app/public/models/body.glb` (1,7 MB). Dacă WebGL nu merge → silueta 2D veche. Zonele mușchilor = elipsoide în metri (ZONES din Body3D.tsx): se pot ajusta dacă roșul nu cade exact pe mușchi.
-- Model: BodyParts3D (DBCLS), licență CC BY 4.0 → mențiunea e sub figură (obligatorie). Lipsesc din bază drept abdominal și dorsal mare, dar zonele colorează ce e în regiune.
-- Higgsfield n-a fost folosit: 3 credite în cont, un model 3D costă 7–25.
-- La cererea ta, organele genitale au fost scoase din piele (aspect de manechin): în `to_glb.py`, funcția `mannequin` taie triunghiurile din zona |x|<4,5 cm, y 0,765–0,87 m, z>1,8 cm și acoperă golul cu o suprafață.
-- Cum am construit body.glb (scripturi în scratchpad, nu în repo): arhiva isa_BP3D_4.0_obj_99.zip → mușchi/oase/piele după ierarhia is-a (FMA5022/5018/7163) → `to_glb.py` → gltf-transform + meshoptimizer (26k/34k/46k triunghiuri, quantize, meshopt).
-
-## Înainte (2026-11-25, noaptea)
-**V2.4 completă:** în pagina Progres și tehnică, deasupra listei: „Pe săptămâni” (bare pe 8 săptămâni, comutator Volum / Frecvență, atingi o bară → valoarea) și „Mușchi lucrați în ultimele 7 zile” (siluetă față/spate în stil hologramă cyan, mușchii lucrați în roșu, intensitate după serii: 8 serii = plin; serie principală = 1, secundară = 0,5) + lista mușchilor cu serii. Calcule: `weekOf`, `weekly`, `muscleSets` în progress.ts (cu teste, 45 total).
-**Ferestrele de completare** (masă, apă, căutare, fișa ⓘ…) apar acum SUS, nu jos (tu: „tot jos rămâne” chiar și după reparația cu tastatura). Dacă tot nu e bine pe iPhone: următorul pas e să scot deschiderea automată a tastaturii.
-
-## Înainte (2026-11-25, seara)
-**Pagina „Progres și tehnică” (cerută de tine):** buton sus în Antrenament → lista exercițiilor făcute (record, sesiuni, ▶ dacă are video) → atingi unul: videoclipul tău Higgsfield + Record/1RM/Sesiuni + grafic animat + toate sesiunile. Graficul NU mai e în fișa ⓘ; fișa ⓘ arată acum videoclipul tău (dacă există), altfel pozele vechi.
-- Videoclipuri: 110 (contul tău Higgsfield, modelul seedance_2_5, hologramă cyan cu mușchii în roșu). Lista în `app/src/data/videos.json` (nume, id exercițiu, link); 106 legate de exerciții din bibliotecă, 4 doar după nume (Burpee, Landmine Press, Reverse Lunge, Side Lunge: merg dacă ai exerciții proprii cu exact aceste nume). Linkurile sunt direct de pe CDN-ul Higgsfield (publice, permanente, ~1,5 MB/bucată). Dacă le ștergi din Higgsfield, dispar și din aplicație.
-- Potrivirea nume → exercițiu e făcută de mine; câteva sunt aproximări (ex. Pistol Squat → Kettlebell Pistol Squat, Single-Leg RDL → Kettlebell One-Legged Deadlift, Nordic → Natural Glute Ham Raise, Seated Machine Row → Leverage Iso Row). Scriptul: scratchpad, nu în repo.
-- Apăsarea din nou pe „Antrenament” jos te scoate din pagina de progres.
-
-## Înainte (2026-11-25, după-amiaza)
-**V2.4 partea 1, Progres pe exercițiu: publicat (6ffefe5).** În fișa exercițiului (ⓘ / i) apare „Progresul tău”: recordul (cea mai grea serie), 1RM estimat (Epley), „Data trecută” + „Azi încearcă” (progresie dublă: +1 rep până la 12, apoi +2,5 kg și 8 rep.), un grafic al 1RM-ului pe sesiuni (atingi un punct și vezi valoarea) și lista „Toate sesiunile”. Calculele sunt în `lib/progress.ts` (cu test), citirea în `loadHistory` (workouts.ts). Verificat în browser cu date simulate. Merge doar cu internet.
-- **Și în cardul de antrenament (a9ad718):** sub fiecare exercițiu: „Data trecută (data): serii”, „Azi încearcă: …” și „Record …”; câmpurile reps × kg vin precompletate cu sugestia. Tu ai cerut asta: nu găseai progresul (era doar în fișa ⓘ).
-- Exercițiu propriu cu același nume = refolosit (înainte făcea unul nou și istoricul se rupea).
-- V2.4 rămas: grafice de volum/frecvență, harta mușchilor lucrați.
-
-**V2.1 Mese salvate: publicat, testat de tine pe telefon (ok).** Cum funcționează: bifa „Salvează în Mesele mele” în fereastra mesei; masa apare ca buton „+” deasupra lui „Adaugă masă” și se adaugă cu o atingere; „Modifică” le șterge. Sunt ținute în profil (`saved_meals`), deci merg și fără semnal.
-- C: are acum 76 GB liberi (rezolvat). Parolele sunt amânate (decizia ta).
-
-## Înainte (2026-11-23)
-**V1 e completă și online: https://cosminel23333.github.io/fitascend/**
-- ✔ Cont/login, profil (editabil, inclusiv obiectivul), calculator calorii
-- ✔ Ecranul Azi: mese, apă, somn, pași, timp pe telefon, greutate (opțională), suplimente
-- ✔ Antrenament: căutare (876 de exerciții, „pec” → Butterfly), serii × kg, fișă cu poze, cardio, HIIT, exerciții proprii
-- ✔ Calendar: lunile anterioare, puncte pe zile, pagina zilei, editare pentru zile trecute
-- ✔ Pașii din Apple Health prin Scurtătură, automat de câteva ori pe zi
-- ✔ Datele stau doar în cloud; pe telefon doar coada de netrimise (+ profilul)
-- ✔ V2.3 în lucru: splash cu logo-ul (tunel de lumină roșu/auriu la pornire; logo 3D cu bară de lumină la schimbarea paginii). Ultima corectură (bara traversează tot logo-ul, decupată pe colțurile rotunjite) e publicată (213e6a9). **Nu am primit încă părerea ta de pe telefon.**
+**Netestat de mine pe iPhone real:** camera live la scanare, ferestrele cu tastatura deschisă, fluiditatea figurii 3D.
 
 ## Pașii următori
-0. Tu: testezi scanarea live pe iPhone + un produs negăsit (îl adaugi, apoi îl scanezi din nou)
-   - Apoi (propus): V2.6 streak-uri + insigne + rezumat săptămânal; alternative V2.7 notificări, V2.8 export, V2.9 widget/Siri; mică: „apasă + Serie ca să salvezi”
-   - ✔ Figura 3D ok (confirmat).
-   - Apoi: V2.6 streak-uri/insigne, V2.5 coduri de bare sau V2.7 notificări; mica îmbunătățire „apasă + Serie ca să salvezi” încă nefăcută
-   - ✔ Pagina Progres și tehnică ok (confirmat). Alarmă falsă „nu se salvează”: ai ales exercițiul fără „+ Serie” (valorile precompletate par salvate). Idee propusă: exercițiul ales să rămână după refresh + mesaj „apasă + Serie ca să salvezi”
-   - Următorul (propus): restul V2.4 (volum săptămânal + frecvență + harta mușchilor în pagina Progres) sau V2.6 streak-uri, V2.5 coduri de bare, V2.7 notificări
-1. Tu: testezi pe iPhone (9f515c5): (a) din ziua deschisă în Calendar, apeși iar „Calendar” jos → revii la lună; (b) „+ Adaugă masă” cu tastatura deschisă: se vede tot până la „Salvează”; (c) fișa ⓘ: derulezi până la grafic; (d) exercițiu nou adăugat urcă singur în mijlocul ecranului
-   - Dacă (b) tot nu merge: următorul pas e să scot autoFocus (tastatura să nu mai apară singură)
-   - ✔ Progresul în card merge (confirmat). Graficul: în fișa ⓘ, de la 2 zile diferite
-2. Apoi: restul V2.4 (volum/frecvență, harta mușchilor) sau altă funcție V2
-3. Tot deschis: părerea ta despre splash; întrebările:
-   - fac iconița de pe ecranul iPhone-ului din „App icon logo”?
-   - golesc cache-ul npm (~1 GB pe C:)? E sigur, se redescarcă la nevoie.
-   - scot complet logo-urile originale din istoricul GitHub (force push, ireversibil)? Implicit le las.
-4. Restul V2: coduri de bare, streak-uri, notificări (parolele: amânate)
-5. De verificat: somnul din Health după prima noapte cu ceasul
+1. Tu, pe iPhone: scanare live pe un produs + un produs negăsit (îl adaugi, apoi îl scanezi din nou); spui dacă vreun videoclip e la exercițiul greșit sau dacă roșul de pe figura 3D nu cade pe mușchiul corect
+2. Următoarea funcție (de ales): **V2.6 streak-uri + insigne + rezumat săptămânal** (propunerea mea), V2.7 notificări, V2.8 export Excel/CSV, V2.9 widget + Siri. Mic: „apasă + Serie ca să salvezi” sub exercițiu
+3. Întrebări încă deschise: iconița iPhone din „App icon logo”? golesc cache-ul npm (~1 GB)? scot logo-urile originale din istoricul GitHub (ireversibil; implicit le las)? părerea ta despre splash
+4. De verificat: somnul din Health după o noapte cu ceasul
+5. Amânate (decizia ta): „Am uitat parola” / „Schimbă parola”
 
 ## Decizii luate
 - PWA, nu nativă: fără Mac și fără 99$/an
@@ -81,12 +42,13 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 - Descrierile exercițiilor sunt în engleză (vin așa din baza gratuită)
 
 ## Fișiere importante
-- `SPEC.md`, `tasks/plan.md`: cerințe și plan (V1 bifat)
+- `SPEC.md`, `tasks/plan.md`: cerințe și plan (V1 bifat; lista V2 în SPEC secțiunea 11)
 - `SCURTATURA_APPLE_HEALTH.txt`: ghidul Scurtăturii (verificat pe iOS 26), bun și pentru prieteni
-- `supabase/schema.sql` (structura completă) + fișierele `2026-11-23_*.sql` (toate rulate)
-- `app/src/lib/`: `outbox.ts` (coada), `sync.ts`, `profile.ts`, `day.ts`, `workouts.ts`, `exercises.ts`, `calories.ts`, `month.ts`, `uuid.ts`
-- `app/src/pages/`: `Today`, `Workout`, `Calendar`, `Calculator`, `ProfileForm`, `HealthCard`, `Auth`, `Sheet`, `Splash`
-- `app/tests/`: 36 de teste
+- `supabase/schema.sql` (structura completă) + fișierele `2026-11-*.sql` (toate rulate; Supabase avertizează „destructive” la `drop policy if exists`: e normal)
+- `app/src/lib/`: `outbox.ts` (coada), `sync.ts`, `profile.ts`, `day.ts`, `workouts.ts` (+ `loadSets`), `exercises.ts`, `calories.ts`, `month.ts`, `uuid.ts`, `progress.ts` (record, 1RM, săptămâni, mușchi), `videos.ts` + `data/videos.json`, `food.ts` (coduri de bare)
+- `app/src/pages/`: `Today`, `Workout`, `Progress`, `Body3D`, `FoodScan`, `Calendar`, `Calculator`, `ProfileForm`, `HealthCard`, `Auth`, `Sheet`, `Splash`
+- `app/public/models/body.glb`: figura 3D (1,7 MB); scripturile care l-au construit sunt în scratchpad-ul sesiunii, nu în repo
+- `app/tests/`: 46 de teste
 - `Logo si poze input/`: logo-urile tale + video-ul model (doar local)
 
 ## Publicare
@@ -113,3 +75,4 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 - 2026-11-26: tu: scoate penisul din model → tăiat din piele + gol acoperit; verificat din față și profil
 - 2026-11-26: V2.5 coduri de bare (barcode-detector 3.2.3 cu zxing-wasm pe iPhone) + OCR etichetă (tesseract.js 7.0.0); test cap-coadă în playwright cu imagini generate (scratchpad/v/test_images.py)
 - 2026-11-26: scos OCR-ul; produse proprii comune în tabelul `foods` (RLS: citesc toți autentificații, modifică doar autorul); atenție: codurile 2xxxx sunt interne de magazin și pot exista în OFF cu produse aleatorii
+- 2026-11-26: caietul curățat (rezumat unic sus); sfârșit de zi, totul publicat
