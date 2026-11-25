@@ -3,7 +3,13 @@
 ## Scop
 Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva prieteni. Adună într-un singur loc antrenamentele, mesele, apa, somnul, pașii și restul, cu un calendar central. Cost 0 lei.
 
-## Unde am rămas (2026-11-25, noaptea)
+## Unde am rămas (2026-11-26, după miezul nopții)
+**Figura 3D (cerută de tine) în loc de silueta 2D:** hologramă cyan transparentă (piele, cum ai cerut: „să fie tot așa albastru și transparent”), scheletul vizibil, mușchii lucrați în ultimele 7 zile pulsează roșu; pornește din față și se rotește singură 360° în 30 s; inel luminos la picioare. `pages/Body3D.tsx` (Three.js 0.186.1, încărcat separat doar în pagina Progres), model `app/public/models/body.glb` (1,7 MB). Dacă WebGL nu merge → silueta 2D veche. Zonele mușchilor = elipsoide în metri (ZONES din Body3D.tsx): se pot ajusta dacă roșul nu cade exact pe mușchi.
+- Model: BodyParts3D (DBCLS), licență CC BY 4.0 → mențiunea e sub figură (obligatorie). Lipsesc din bază drept abdominal și dorsal mare, dar zonele colorează ce e în regiune.
+- Higgsfield n-a fost folosit: 3 credite în cont, un model 3D costă 7–25.
+- Cum am construit body.glb (scripturi în scratchpad, nu în repo): arhiva isa_BP3D_4.0_obj_99.zip → mușchi/oase/piele după ierarhia is-a (FMA5022/5018/7163) → `to_glb.py` → gltf-transform + meshoptimizer (26k/34k/46k triunghiuri, quantize, meshopt).
+
+## Înainte (2026-11-25, noaptea)
 **V2.4 completă:** în pagina Progres și tehnică, deasupra listei: „Pe săptămâni” (bare pe 8 săptămâni, comutator Volum / Frecvență, atingi o bară → valoarea) și „Mușchi lucrați în ultimele 7 zile” (siluetă față/spate în stil hologramă cyan, mușchii lucrați în roșu, intensitate după serii: 8 serii = plin; serie principală = 1, secundară = 0,5) + lista mușchilor cu serii. Calcule: `weekOf`, `weekly`, `muscleSets` în progress.ts (cu teste, 45 total).
 **Ferestrele de completare** (masă, apă, căutare, fișa ⓘ…) apar acum SUS, nu jos (tu: „tot jos rămâne” chiar și după reparația cu tastatura). Dacă tot nu e bine pe iPhone: următorul pas e să scot deschiderea automată a tastaturii.
 
@@ -33,7 +39,7 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 - ✔ V2.3 în lucru: splash cu logo-ul (tunel de lumină roșu/auriu la pornire; logo 3D cu bară de lumină la schimbarea paginii). Ultima corectură (bara traversează tot logo-ul, decupată pe colțurile rotunjite) e publicată (213e6a9). **Nu am primit încă părerea ta de pe telefon.**
 
 ## Pașii următori
-0. Tu: testezi pe iPhone ferestrele de sus + graficele pe săptămâni + harta mușchilor
+0. Tu: testezi pe iPhone figura 3D (se încarcă? e fluidă? roșul pe mușchii corecți?) + ferestrele de sus + graficele pe săptămâni
    - Apoi: V2.6 streak-uri/insigne, V2.5 coduri de bare sau V2.7 notificări; mica îmbunătățire „apasă + Serie ca să salvezi” încă nefăcută
    - ✔ Pagina Progres și tehnică ok (confirmat). Alarmă falsă „nu se salvează”: ai ales exercițiul fără „+ Serie” (valorile precompletate par salvate). Idee propusă: exercițiul ales să rămână după refresh + mesaj „apasă + Serie ca să salvezi”
    - Următorul (propus): restul V2.4 (volum săptămânal + frecvență + harta mușchilor în pagina Progres) sau V2.6 streak-uri, V2.5 coduri de bare, V2.7 notificări
@@ -92,3 +98,4 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 - 2026-11-25: tu: (1) înapoi la calendar doar din „‹ Calendar” → apăsarea din nou pe tab-ul curent revine la prima vedere (`home` în App.tsx); (2) foile de jos nu se vedeau / nu derulau pe iPhone → Sheet urmărește `visualViewport` (deasupra tastaturii), blochează pagina din spate (`html.sheet-open`), `overscroll-behavior: contain`; exercițiul nou se derulează în vedere. Tastatura nu se poate simula, deci (b) e neverificat pe iPhone
 - 2026-11-25: pagina Progres și tehnică (`pages/Progress.tsx`, `lib/videos.ts`, `byExercise` + test, `loadSets` cu paginare de 1000); 42 de teste; verificat în browser simulat (video rulează, grafic animat)
 - 2026-11-25: V2.4 rest (volum/frecvență/harta mușchilor) + ferestre sus. Capcană: clasa CSS `.bar` (macronutrienți, height 6px) se aplica și pe `<rect>` SVG → redenumit `wk-bar`
+- 2026-11-26: figura 3D hologramă (BodyParts3D + Three.js, shader propriu: fresnel cyan + zone roșii pulsând); verificat în browser simulat (pornește din față, se rotește, roșu pe piept/brațe)
