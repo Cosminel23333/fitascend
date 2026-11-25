@@ -3,6 +3,7 @@ import { localDay, useDay, type Entry } from '../lib/day'
 import { useI18n } from '../lib/i18n'
 import { setSaved, targets, type Profile, type SavedMeal } from '../lib/profile'
 import { supabase } from '../lib/sync'
+import FoodScan, { type Filled } from './FoodScan'
 import Sheet from './Sheet'
 
 type Single = 'sleep' | 'steps' | 'screen' | 'weight'
@@ -253,7 +254,8 @@ function MealSheet({ entry, isSaved, onSave, onDelete, onClose }: {
 }) {
   const { t } = useI18n()
   const [error, setError] = useState('')
-  const d = entry?.data ?? {}
+  const [scanned, setScanned] = useState<Filled | null>(null) // from a barcode or a label photo
+  const d: Record<string, unknown> = scanned ?? entry?.data ?? {}
   const [keep, setKeep] = useState(() => isSaved(String(d.name ?? '')))
 
   function submit(e: FormEvent<HTMLFormElement>) {
@@ -274,10 +276,12 @@ function MealSheet({ entry, isSaved, onSave, onDelete, onClose }: {
 
   return (
     <Sheet title={entry ? t('today.editMeal') : t('today.addMeal')} onClose={onClose}>
-      <form className="form" onSubmit={submit}>
-        <label className="field"><span>{t('today.mealName')}</span><input name="name" required defaultValue={String(d.name ?? '')} autoFocus /></label>
+      <FoodScan onFill={setScanned} />
+      {/* key: a scan refills every field */}
+      <form className="form" onSubmit={submit} key={scanned ? JSON.stringify(scanned) : 'typed'}>
+        <label className="field"><span>{t('today.mealName')}</span><input name="name" required defaultValue={String(d.name ?? '')} /></label>
         <label className="field"><span>{t('today.mealDesc')}</span><textarea name="description" rows={2} defaultValue={String(d.description ?? '')} /></label>
-        <label className="field"><span>kcal</span><input name="kcal" inputMode="decimal" required defaultValue={entry?.value ?? ''} /></label>
+        <label className="field"><span>kcal</span><input name="kcal" inputMode="decimal" required defaultValue={scanned?.kcal ?? entry?.value ?? ''} /></label>
         <div className="row3">
           <label className="field"><span>{t('today.protein')} (g)</span><input name="protein" inputMode="decimal" defaultValue={String(d.protein ?? '')} /></label>
           <label className="field"><span>{t('today.carbs')} (g)</span><input name="carbs" inputMode="decimal" defaultValue={String(d.carbs ?? '')} /></label>
