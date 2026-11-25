@@ -23,7 +23,9 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 - ✔ V2.3 în lucru: splash cu logo-ul (tunel de lumină roșu/auriu la pornire; logo 3D cu bară de lumină la schimbarea paginii). Ultima corectură (bara traversează tot logo-ul, decupată pe colțurile rotunjite) e publicată (213e6a9). **Nu am primit încă părerea ta de pe telefon.**
 
 ## Pașii următori
-1. Tu: adaugi azi exercițiul pus acum 2 zile → trebuie să vezi sub el seriile vechi, sugestia și recordul
+1. Tu: testezi pe iPhone (9f515c5): (a) din ziua deschisă în Calendar, apeși iar „Calendar” jos → revii la lună; (b) „+ Adaugă masă” cu tastatura deschisă: se vede tot până la „Salvează”; (c) fișa ⓘ: derulezi până la grafic; (d) exercițiu nou adăugat urcă singur în mijlocul ecranului
+   - Dacă (b) tot nu merge: următorul pas e să scot autoFocus (tastatura să nu mai apară singură)
+   - ✔ Progresul în card merge (confirmat). Graficul: în fișa ⓘ, de la 2 zile diferite
 2. Apoi: restul V2.4 (volum/frecvență, harta mușchilor) sau altă funcție V2
 3. Tot deschis: părerea ta despre splash; întrebările:
    - fac iconița de pe ecranul iPhone-ului din „App icon logo”?
@@ -73,3 +75,4 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 - 2026-11-25: mesele salvate confirmate pe telefon. V2.4 partea 1: progres pe exercițiu (record, 1RM, sugestie, grafic); 41 de teste ok; previzualizare cu playwright-cli și Supabase simulat (sesiune falsă în localStorage + route)
 - 2026-11-25: publicarea pica la 4 din 8 rulări (deploy-pages) → adăugat reîncercare automată în deploy.yml; testat, a mers din a doua încercare; site-ul are progresul
 - 2026-11-25: tu: progresul nu apărea în antrenament → mutat și sub exercițiu în card + precompletare; verificat în browser simulat
+- 2026-11-25: tu: (1) înapoi la calendar doar din „‹ Calendar” → apăsarea din nou pe tab-ul curent revine la prima vedere (`home` în App.tsx); (2) foile de jos nu se vedeau / nu derulau pe iPhone → Sheet urmărește `visualViewport` (deasupra tastaturii), blochează pagina din spate (`html.sheet-open`), `overscroll-behavior: contain`; exercițiul nou se derulează în vedere. Tastatura nu se poate simula, deci (b) e neverificat pe iPhone
