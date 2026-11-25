@@ -5,7 +5,7 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 
 ## Unde am rămas (2026-11-26, și mai târziu)
 **Poza la etichetă SCOASĂ** (tu: „nu prea merge și e greu să faci poza”; tesseract.js dezinstalat). În loc: cod negăsit → formular „Produs nou” (nume, kcal/100 g, P/C/G, porție opțională) → „Salvează produsul” → se salvează în tabelul comun `foods` (toți utilizatorii aplicației îl găsesc la următoarea scanare) → alegi gramele → formularul mesei se completează. Căutare: întâi `foods` (FitAscend), apoi Open Food Facts, apoi USDA. Testat cap-coadă cu un cod inexistent (9582716304401).
-- **AȘTEPT: rulezi `supabase/2026-11-26_foods.sql` în SQL Editor.** Până atunci produsele noi nu se salvează (masa se completează totuși).
+- ✔ `2026-11-26_foods.sql` rulat de tine și verificat (tabelul există, închis pentru cei nelogați). Notă: Supabase avertizează „destructive operations” la `drop policy if exists` / `revoke`; e normal pentru fișierele noastre. Până atunci produsele noi nu se salvează (masa se completează totuși).
 
 ## Înainte (2026-11-26, noaptea târziu)
 **V2.5 Coduri de bare + poză la etichetă (gata, publicat):** în „Adaugă masă” sus: „Scanează codul” (camera live în aplicație/web; dacă nu merge camera → „Poză la cod”) și „Poză la etichetă”. Cod → Open Food Facts (mondial, multe produse RO), apoi USDA (DEMO_KEY, ~30 căutări/oră). Etichetă → OCR pe telefon (tesseract.js, ron+eng; prima dată descarcă câțiva MB) → kcal/grăsimi/glucide/proteine la 100 g (+ corectează virgula pierdută folosind caloriile). Apoi „Cât ai mâncat (g)” (implicit porția produsului sau 100) → „Completează” umple formularul; poți corecta. `lib/food.ts` (+ teste), `pages/FoodScan.tsx`. Am scos și tastatura automată din fereastra mesei.
@@ -48,7 +48,7 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 - ✔ V2.3 în lucru: splash cu logo-ul (tunel de lumină roșu/auriu la pornire; logo 3D cu bară de lumină la schimbarea paginii). Ultima corectură (bara traversează tot logo-ul, decupată pe colțurile rotunjite) e publicată (213e6a9). **Nu am primit încă părerea ta de pe telefon.**
 
 ## Pașii următori
-0. Tu: rulezi 2026-11-26_foods.sql; testezi scanarea live + un produs negăsit
+0. Tu: testezi scanarea live pe iPhone + un produs negăsit (îl adaugi, apoi îl scanezi din nou)
    - Apoi (propus): V2.6 streak-uri + insigne + rezumat săptămânal; alternative V2.7 notificări, V2.8 export, V2.9 widget/Siri; mică: „apasă + Serie ca să salvezi”
    - ✔ Figura 3D ok (confirmat).
    - Apoi: V2.6 streak-uri/insigne, V2.5 coduri de bare sau V2.7 notificări; mica îmbunătățire „apasă + Serie ca să salvezi” încă nefăcută
