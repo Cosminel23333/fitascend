@@ -3,7 +3,11 @@
 ## Scop
 Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva prieteni. Adună într-un singur loc antrenamentele, mesele, apa, somnul, pașii și restul, cu un calendar central. Cost 0 lei.
 
-## Unde am rămas (2026-11-26, după miezul nopții)
+## Unde am rămas (2026-11-26, noaptea târziu)
+**V2.5 Coduri de bare + poză la etichetă (gata, publicat):** în „Adaugă masă” sus: „Scanează codul” (camera live în aplicație/web; dacă nu merge camera → „Poză la cod”) și „Poză la etichetă”. Cod → Open Food Facts (mondial, multe produse RO), apoi USDA (DEMO_KEY, ~30 căutări/oră). Etichetă → OCR pe telefon (tesseract.js, ron+eng; prima dată descarcă câțiva MB) → kcal/grăsimi/glucide/proteine la 100 g (+ corectează virgula pierdută folosind caloriile). Apoi „Cât ai mâncat (g)” (implicit porția produsului sau 100) → „Completează” umple formularul; poți corecta. `lib/food.ts` (+ teste), `pages/FoodScan.tsx`. Am scos și tastatura automată din fereastra mesei.
+- Verificat în browser: cod Coca-Cola din poză → găsit, 330 g → 145 kcal; etichetă generată → 250 kcal, 12,5 G, 30 C, 5,2 P. Camera live NU se poate testa la mine (fără cameră) → de verificat pe iPhone.
+
+## Înainte (2026-11-26, după miezul nopții)
 **Figura 3D (cerută de tine) în loc de silueta 2D:** hologramă cyan transparentă (piele, cum ai cerut: „să fie tot așa albastru și transparent”), scheletul vizibil, mușchii lucrați în ultimele 7 zile pulsează roșu; pornește din față și se rotește singură 360° în 30 s; inel luminos la picioare. `pages/Body3D.tsx` (Three.js 0.186.1, încărcat separat doar în pagina Progres), model `app/public/models/body.glb` (1,7 MB). Dacă WebGL nu merge → silueta 2D veche. Zonele mușchilor = elipsoide în metri (ZONES din Body3D.tsx): se pot ajusta dacă roșul nu cade exact pe mușchi.
 - Model: BodyParts3D (DBCLS), licență CC BY 4.0 → mențiunea e sub figură (obligatorie). Lipsesc din bază drept abdominal și dorsal mare, dar zonele colorează ce e în regiune.
 - Higgsfield n-a fost folosit: 3 credite în cont, un model 3D costă 7–25.
@@ -40,7 +44,9 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 - ✔ V2.3 în lucru: splash cu logo-ul (tunel de lumină roșu/auriu la pornire; logo 3D cu bară de lumină la schimbarea paginii). Ultima corectură (bara traversează tot logo-ul, decupată pe colțurile rotunjite) e publicată (213e6a9). **Nu am primit încă părerea ta de pe telefon.**
 
 ## Pașii următori
-0. Tu: testezi pe iPhone figura 3D (se încarcă? e fluidă? roșul pe mușchii corecți?) + ferestrele de sus + graficele pe săptămâni
+0. Tu: testezi pe iPhone scanarea (camera live pe un produs, apoi o poză la o etichetă reală)
+   - Apoi: V2.6 streak-uri + insigne, V2.7 notificări, V2.8 export; mică: „apasă + Serie ca să salvezi”
+   - ✔ Figura 3D ok (confirmat).
    - Apoi: V2.6 streak-uri/insigne, V2.5 coduri de bare sau V2.7 notificări; mica îmbunătățire „apasă + Serie ca să salvezi” încă nefăcută
    - ✔ Pagina Progres și tehnică ok (confirmat). Alarmă falsă „nu se salvează”: ai ales exercițiul fără „+ Serie” (valorile precompletate par salvate). Idee propusă: exercițiul ales să rămână după refresh + mesaj „apasă + Serie ca să salvezi”
    - Următorul (propus): restul V2.4 (volum săptămânal + frecvență + harta mușchilor în pagina Progres) sau V2.6 streak-uri, V2.5 coduri de bare, V2.7 notificări
@@ -101,3 +107,4 @@ Aplicație fitness web (PWA), cu iconiță pe iPhone, pentru tine și câțiva p
 - 2026-11-25: V2.4 rest (volum/frecvență/harta mușchilor) + ferestre sus. Capcană: clasa CSS `.bar` (macronutrienți, height 6px) se aplica și pe `<rect>` SVG → redenumit `wk-bar`
 - 2026-11-26: figura 3D hologramă (BodyParts3D + Three.js, shader propriu: fresnel cyan + zone roșii pulsând); verificat în browser simulat (pornește din față, se rotește, roșu pe piept/brațe)
 - 2026-11-26: tu: scoate penisul din model → tăiat din piele + gol acoperit; verificat din față și profil
+- 2026-11-26: V2.5 coduri de bare (barcode-detector 3.2.3 cu zxing-wasm pe iPhone) + OCR etichetă (tesseract.js 7.0.0); test cap-coadă în playwright cu imagini generate (scratchpad/v/test_images.py)
